@@ -1,0 +1,185 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+\PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2020
+
+% ready for submission
+% \usepackage{neurips_2020}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+    \usepackage[final, nonatbib]{neurips_2020}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+ %    \usepackage[final]{neurips_2020}
+
+% to avoid loading the natbib package, add option nonatbib:
+%     \usepackage[nonatbib]{neurips_2020}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{wrapfig}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{siunitx} % Required for alignment
+
+
+\DeclareMathOperator{\Lagr}{\mathcal{L}}
+
+\usepackage[ 
+	backend=bibtex8,     
+    style=authoryear,	
+    maxcitenames=2,      
+    maxbibnames=25,  
+    dashed = false,		
+    hyperref=true,       
+    bibencoding=inputenc,   
+    useeditor=false,  
+    uniquename=init,  
+    doi=true,
+    url=true,
+    isbn = false,
+    giveninits = true,
+    natbib=true
+]{biblatex}
+
+\sisetup{
+  round-mode          = places, % Rounds numbers
+  round-precision     = 4, % to 4 places
+}
+
+\addbibresource{references.bib}
+
+\title{Are transformer models in time series forecasting worth the hustle? \\
+        \Large A data driven Approach}
+        
+\author{Jan Besler \\
+        5629079}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+\subsection{Motivation}
+
+In early 2023, Large Language Models (LLM) attracted much public attention with the emergence of ChatGPT. The development of these models can be traced back to the development of transformer models, which have proven useful in the field of NLP. These transformer models use sequential data as input, i.e. a data point depends on the previous data points.
+These Transformer models are also popular in other fields, such as time series forecasting, where the data is sequential by definition. In this research area, other models still receive a lot of attention, for example Long Short Term Memory (LSTM). The question therefore arises why Transformer models are not solely used for time series forecasting? This question was investigated by \cite{transformers-effectiveness} and their hypothesis is that it depends on the complexity of the underlying data which model performs better.
+They concluded that transformers only have an advantage when they work with complex data structures, such as languages and text data. Thus, a transformer model with less complex data may lead to worse results compared to another model such as an LSTM. \par 
+In order to investigate the hypothesis put forward by \cite{transformers-effectiveness}, this thesis will test different models on data with different levels of complexity. The data chosen is from wind turbines for the more complex side and electricity consumption from different companies on the less complex side. These applications were chosen to investigate how predictive models can be improved. And whether it is generally worthwhile to develop more complex models for different use cases if they might give worse results than previous solutions. \par 
+
+In the area of electricity generation and consumption, forecasting is a relevant issue to drive the decarbonisation of the economy through the deployment of renewable energy. With the introduction of more renewable energy systems, electricity production fluctuates more than before, while demand patterns remain largely the same. This leads to conflicts, as demand and production need to be perfectly matched at all times. In addition, the stability of the power grid must be taken into account, as a production peak can lead to problems with the frequency of the power grid, which in turn can lead to system-wide failures and power outages. To avoid these problems, it is important to predict electricity production with high accuracy in order to know when the flow of electricity needs to be regulated by the relevant authorities and companies. On the other hand, it is beneficial for companies to know when they will consume the amount of energy for the corresponding time. This makes it easier to plan ahead, to take advantage of lower prices on the spot market and is another contribution to the stability of the electricity grid.\par 
+
+The deep learning models used, are probabilistic and not deterministic. This is due to the advantages of probabilistic models when working with noisy data and the resulting probability distributions as outcomes instead of deterministic values. With the ability to quantify the uncertainty of forecasts, there is an advantage to modelling in a probabilistic way by understanding the range and probability of possible outcomes. Even if there is no exact value for the outcome, ranges can be given to estimate how big the impact will be.
+However, the disadvantages of working with probabilistic models are the increased complexity due to working with probability distributions as outcomes, making the results less intuitive to interpret. In addition, the increased complexity leads to higher computational costs and thus greater demands on limited resources.
+
+\subsection{Research Question}
+
+The overarching goal is to investigate whether the transformer models bring such advantageous properties in terms of accuracy to justify the added complexity, as it has successfully happened in the NLP context. The aspects to focus on are the direct comparison with another deep learning model to evaluate if the transformer is actually performing better than a less complex LSTM model. And also how much time and resources the development takes up to come to a qualitative conclusion if a transformer model is worth the effort for the potential benefit versus other models. \par 
+Therefor a specific research question could be \textbf{"Are transformer models in time series forecasting worth the hustle? A data driven approach"}. To answer this rather vague question, the steps towards this end goal are formulated in several sub questions to guide the way. 
+
+\begin{enumerate}
+    \item How are good models assessed in a qualitative way?
+        \begin{itemize}
+            \item accuracy vs time to train vs intuitive interpretation vs resources used
+        \end{itemize}
+    \item How are the two data sets and thus the results comparable?
+        \begin{itemize}
+            \item time intervals and time zones
+            \item how are missing/false values handled
+            \item weather conditions comparable/relevant
+        \end{itemize}
+    \item Do Transformer outperform linear and LSTM models?
+        \begin{itemize}
+            \item under what settings does this happen
+            \item how much improvement can be achieved
+        \end{itemize}
+    \item Which of the selected Transformer Models performs best?
+        \begin{itemize}
+            \item accuracy to training time ratio
+            \item what architecture properties does the better models have
+        \end{itemize}
+\end{enumerate}
+
+\section{Related Work}
+
+\section{Data}
+
+Two data sets are used to compare the data complexity types. On the more complex side is SCADA wind farm data from \cite{Windpark_Data_1}, which is 10-minute SCADA and event data from the 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021. On the less complex side is electricity consumption data from 4 manufacturing companies in Germany provided by Fraunhofer IPA. The data is available in 15-minute intervals and shows the electricity consumption in a hierarchical representation.
+Do determine the complexity of a data set, the auto correlation is being used as a metric. The lower the auto correlation the higher the data complexity. 
+
+\begin{table}[!h]
+\small
+\centering
+    \begin{tabular}{l|c|r|r|r|S|r}
+    \toprule
+    \textbf{Location} & \textbf{Turbine} & \textbf{Total Values} & \textbf{Missing Values} & \textbf{Outliers} & \textbf{Highest Z-Score} & \textbf{Stationarity} \\
+    \midrule
+\textbf{Kelmarsh} & 1 & 288 864 & 3449 & 6 & 3.835573 & yes \\
+         & 2 & 288 864 & 3041 & 5 & 3.636474 & yes \\
+         & 3 & 288 864 & 4195 & 3179 & 4.069864 & yes \\
+         & 4 & 288 864 & 4938 & 2 & 3.370353 & yes \\
+         & 5 & 288 864 & 3937 & 3091 & 4.793479 & yes \\
+         & 6 & 288 864 & 5072 & 4625 & 5.445566 & yes \\
+    \midrule
+\textbf{Penmanshiel} & 01 & 266 435 & 1418 & 0 & 0.000000 & yes \\
+            & 02 & 266 923 & 2903 & 1 & 3.441052 & yes \\
+            & 04 & 265 447 & 924 & 1 & 3.374390 & yes \\
+            & 05 & 265 135 & 802 & 1 & 3.479419 & yes \\
+            & 06 & 267 012 & 3732 & 1 & 497.073209 & yes \\
+            & 07 & 267 014 & 1032 & 1 & 3.595320 & yes \\
+            & 08 & 259 106 & 3977 & 1 & 3.302787 & yes \\
+            & 09 & 263 882 & 9076 & 0 & 0.000000 & yes \\
+            & 10 & 263 412 & 8492 & 1 & 3.760396 & yes \\
+            & 11 & 260 294 & 4977 & 1 & 3.372419 & yes \\
+            & 12 & 262 702 & 7259 & 1 & 3.230310 & yes \\
+            & 13 & 263 000 & 7841 & 0 & 0.000000 & yes \\
+            & 14 & 261 694 & 7005 & 1 & 3.029291 & yes \\
+            & 15 & 260 952 & 5640 & 1 & 3.298785 & yes \\
+    \bottomrule
+    \end{tabular}
+\caption{Summary of Pre-processing Steps for Wind Turbine Data}
+\label{tab:preprocessing_windturbines}
+\end{table}
+
+
+4000 outlier zu viel -> woran liegt das?
+  --> anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
+  --> distribution plotten und tails analysieren
+  --> wind zu output mappen und gucken ob es da zusammenhänge gibt
+
+adf mit lags, um trend changes rauszufiltern
+
+test auf distributions von test und train, nicht notwednnig um generalisierung voranzutreiben
+
+missing values, einzelzeitschritte interpolieren und längere Zeiträume löschen
+
+meta learning für festure umschlaten
+
+\section{Methodology}
+
+The models selected for evaluation are several different transformer models, an LSTM model and a non-machine learning based model that serves as a benchmark for the other models. For the benchmark task, the Random Forest was chosen because of its numerous applications in the field of time series forecasting in previous work. The models that use deep neural networks are not written from scratch, but come from various publicly available libraries (PyTorch). These basic models are then fine-tuned using hyperparameter search. For the transformer models, various models from renowned papers as well as a self-made shallow transformer are selected to test whether the depth of the network has a large impact on the results. The forecast horizons are 1 hour, 24 hours and 96 hours, with the last forecast being the most difficult task. This last number was chosen because the weather forecasts are also produced for a 96-hour period. This rating is based on the total computational time to evaluate all models and the computational resources in terms of GPU/CPU and RAM usage.\par 
+
+It is difficult to quantify whether a model provides a benefit in terms of increased predictive accuracy compared to the computational costs spent on development. Due to scalability, a small increase in accuracy can justify huge development costs when deployed at scale. The data is first pre-processed in a data pipeline to detect outliers and find missing values that could later affect the models. In a second step, the data is fed into the different models, and each of the datasets is compared against certain metrics to measure the performance of the models. Finally, the results are printed in tabular form and presented graphically for better comparability in the paper.
+
+
+\newpage
+
+\printbibliography
+
+\end{document}
