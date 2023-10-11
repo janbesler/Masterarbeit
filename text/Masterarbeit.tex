@@ -76,6 +76,21 @@
 
 \section{Introduction}
 
+\subsection{To-Do}
+
+\begin{itemize}
+    \item 4000 outlier zu viel -> woran liegt das?
+    \begin{itemize}
+        \item anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
+        \item distribution plotten und tails analysieren
+        \item wind zu output mappen und gucken ob es da zusammenhänge gibt
+    \end{itemize}
+    \item adf mit lags, um trend changes rauszufiltern
+    \item test auf distributions von test und train, nicht notwednnig um generalisierung voranzutreiben
+    \item missing values, einzelzeitschritte interpolieren und längere Zeiträume löschen
+    \item meta learning für feature umschalten
+\end{itemize}
+
 \subsection{Motivation}
 
 In early 2023, Large Language Models (LLM) attracted much public attention with the emergence of ChatGPT. The development of these models can be traced back to the development of transformer models, which have proven useful in the field of NLP. These transformer models use sequential data as input, i.e. a data point depends on the previous data points.
@@ -120,10 +135,19 @@ Therefor a specific research question could be \textbf{"Are transformer models i
 
 \section{Data}
 
-Two data sets are used to compare the data complexity types. On the more complex side is SCADA wind farm data from \cite{Windpark_Data_1}, which is 10-minute SCADA and event data from the 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021. On the less complex side is electricity consumption data from 4 manufacturing companies in Germany provided by Fraunhofer IPA. The data is available in 15-minute intervals and shows the electricity consumption in a hierarchical representation.
+Two data sets are used to compare the data complexity types. On the more complex side is SCADA wind farm data from \cite{Windpark_Data_1}, which is 10-minute SCADA and event data from the 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021. On the less complex side is electricity consumption data from 3 manufacturing companies in Germany provided by Fraunhofer IPA. The data is available in 15-minute intervals and shows the electricity consumption in a hierarchical representation.
 Do determine the complexity of a data set, the auto correlation is being used as a metric. The lower the auto correlation the higher the data complexity. 
 
-\begin{table}[!h]
+\subsection{Windfarms}
+
+The two Windmill parks are located on the British Isle, the first park 'Kelmarsh' is located between Cambridge and Birmingham, while the second park is located south-east of Edinburgh on the coast. 
+Table \ref{tab:preprocessing_windturbines} shows a summary of some pre-processing steps conlcuded with the two data sets. A striking fact is the number of outliers in the \textit{Kelmarsh} Park, as well one Z-Score in the \textit{Penmanshiel} Park which indicates a electricity production of
+\begin{equation*}
+    electricity production = \mu + 497 \cdot \sigma
+\end{equation*}
+hence this is being dropped for being a technical mistake, since the wind speed at that time did not change compared to the hours before and after. 
+
+\begin{table}[!ht]
 \small
 \centering
     \begin{tabular}{l|c|r|r|r|S|r}
@@ -157,25 +181,100 @@ Do determine the complexity of a data set, the auto correlation is being used as
 \label{tab:preprocessing_windturbines}
 \end{table}
 
+To investigate when the missing values occurred the power generation has been mapped in figure \ref{fig:Kelmarsh-missing-values} over the whole time span while the missing values have been color coded in red.
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/Windturbine - Time Series.png}
+    \caption{Complete Power Output - Kelmarsh \#6}
+    \label{fig:Kelmarsh-missing-values}
+\end{figure}
 
-4000 outlier zu viel -> woran liegt das?
-  --> anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
-  --> distribution plotten und tails analysieren
-  --> wind zu output mappen und gucken ob es da zusammenhänge gibt
+Here it becomes visible that most of the missing values are all found in the beginning of the time series, this could be an indicator that not every wind mill was being monitored from the same time on wards as different magnitudes in the missing values for the different turbines show. As a result all missing values in the beginning are being dropped as well as all sequences in each time series with a duration of more than 3 hours since keeping these values does not hold any value for the forecasting task. These outages could be attributed to for example maintenance work. Sin
 
-adf mit lags, um trend changes rauszufiltern
+For the already mentioned problem of having too many outliers in 3 of 6 turbines remains. Outliers in this context have been defined as
+\begin{equation}
+    |outlier| >= 3 * \left( \frac{x - \mu}{\sigma} \right)
+\end{equation}
+the factor of three was chosen instead of the more usual two to account for extremes in wind speed especially in the coastal areas. To visualize the potential outliers all values for the Kelmarsh Wind park have been mapped as a kernel density estimation. The left figure \ref{fig:Kelmarsh-distribution} shows that the majority of values are centred around zero, hence no electricity output and presumably no wind speed. But there is also the practice of turning a turbine out of the wind if the situation demands it, hence no electricity production even though there would be enough wind. To test this hypothesis an deeper analysis of the turbine 6 was done to investigate how often this particular turbine was turned out of the wind. This was defined as 
+\begin{equation}
+    \text{out of wind} = \text{Wind speed (m/s)} > 3 \land \text{Power (kW)} < 1 
+\end{equation}
+resulting in $8705$ values being flagged, or equally $3.16 \%$ of all values. Therefor the data is being removed since the decision of turning a turbine out of the wind is influenced more by the stock exchange prices or the load factor of the electricity grid and has nothing to do with the prediction based on weather indicators. \par 
+The extent can also be seen in the visualization of the $6^th$ turbine in the right figure \ref{fig:Kelmarsh-distribution}
 
-test auf distributions von test und train, nicht notwednnig um generalisierung voranzutreiben
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{graphs/Kelmarsh_output_distribution.png}
+        \caption{total}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{graphs/Corr_Wind_Power.png}
+        \caption{\#6}
+    \end{subfigure}
+    \caption{Kelmarsh power distribution}
+    \label{fig:Kelmarsh-distribution}
+\end{figure}
 
-missing values, einzelzeitschritte interpolieren und längere Zeiträume löschen
 
-meta learning für festure umschlaten
+
+
+
+\subsection{Industrial Electricity Consumption}
+
+
+
+
+
 
 \section{Methodology}
 
 The models selected for evaluation are several different transformer models, an LSTM model and a non-machine learning based model that serves as a benchmark for the other models. For the benchmark task, the Random Forest was chosen because of its numerous applications in the field of time series forecasting in previous work. The models that use deep neural networks are not written from scratch, but come from various publicly available libraries (PyTorch). These basic models are then fine-tuned using hyperparameter search. For the transformer models, various models from renowned papers as well as a self-made shallow transformer are selected to test whether the depth of the network has a large impact on the results. The forecast horizons are 1 hour, 24 hours and 96 hours, with the last forecast being the most difficult task. This last number was chosen because the weather forecasts are also produced for a 96-hour period. This rating is based on the total computational time to evaluate all models and the computational resources in terms of GPU/CPU and RAM usage.\par 
 
 It is difficult to quantify whether a model provides a benefit in terms of increased predictive accuracy compared to the computational costs spent on development. Due to scalability, a small increase in accuracy can justify huge development costs when deployed at scale. The data is first pre-processed in a data pipeline to detect outliers and find missing values that could later affect the models. In a second step, the data is fed into the different models, and each of the datasets is compared against certain metrics to measure the performance of the models. Finally, the results are printed in tabular form and presented graphically for better comparability in the paper.
+
+\subsection{Linear Models}
+
+
+
+\subsection{Machine Learning Models}
+
+
+\subsection{DeepLearning Models}
+
+The goal in this section is to create a distinct Transformer model for time series forecasting, not from scratch but to dissect several different published models and evaluate what each of these models did differently and if the innovative parts is beneficial to this context and data. To get an understanding of the models one has to first in what regard each one differentiates from the vanilla model and also why and how they did it.
+
+\subsubsection{Vanilla Transformer}
+
+The vanilla transformer represents a version that is close to the original model presented by \cite{vanilla-transformer} that utilises the attention mechanism and is not optimised in any way to a time series forecasting role, hence it has no additional layers to perform seasonal decomposition or other methods.
+
+\subsubsection{Informer}
+
+The Informer is a model developed by \cite{Informer} that sets itself apart by enabling multivariate instead of univariate probabilistic time series forecasting. The most distinct noticeable changes are the reduction of the computational requirements to calculate the attention mechanism and reduces the memory usage of the encoder/decoder layers. The first improvement refers to the complexity of calculation for the self-attention in the vanilla model, this can be described with the formula
+\begin{equation*}
+    O(T^2 \cdot D)
+\end{equation*}
+where $T$ is the length of the time series and $D$ is the dimension of the hidden states. The problem here lies in $T^2$ which explodes in the case of long sequences. Therefore the authors have proposed a different method called \textit{ProbSparse} that calculates the complexity of the self-attention calculation as
+\begin{equation*}
+    O(T \cdot log{T}) .
+\end{equation*}
+The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered
+
+
+
+    Quadratic computation of canonical self-attention:
+    The vanilla Transformer has a computational complexity of  where TT is the time series length and DD is the dimension of the hidden states. For long sequence time-series forecasting (also known as the LSTF problem), this might be really computationally expensive. To solve this problem, Informer employs a new self-attention mechanism called ProbSparse attention, which has time and space complexity.
+    
+    Memory bottleneck when stacking layers:
+    When stacking NN encoder/decoder layers, the vanilla Transformer has a memory usage of , which limits the model's capacity for long sequences. Informer uses a Distilling operation, for reducing the input size between layers into its half slice. By doing so, it reduces the whole memory usage to be.
+
+Another interesting aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
+
+
+
+
 
 
 \newpage
