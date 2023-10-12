@@ -18,7 +18,7 @@ This research aims to answer the question, "Are transformer models in time serie
 The study utilizes two distinct data sets:
 
 1. **SCADA Wind Farm Data**: 10-minute SCADA and event data from 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021 (more complex).
-2. **Electricity Consumption Data**: Data from 4 manufacturing companies in Germany provided by Fraunhofer IPA, available in 15-minute intervals (less complex).
+2. **Electricity Consumption Data**: Data from 3 manufacturing companies in Germany provided by Fraunhofer, available in 15-minute intervals (less complex).
 
 The data is not presented here, due to disclosure by the companies and file size.
 
@@ -45,10 +45,6 @@ This section will provide a summary of the findings and implications.
 ## How to Run the Code (If Applicable)
 
 Instructions on how to run any associated code or access the datasets.
-
-## Acknowledgements
-
-Acknowledging any contributors, datasets, or resources used.
 
 ## Contact
 

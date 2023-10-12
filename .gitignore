@@ -1,2 +1,3 @@
-/Paper
-/data
+/text/Paper/*.pdf
+*.csv
+*.zip
