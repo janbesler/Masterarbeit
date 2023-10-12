@@ -138,12 +138,12 @@ Therefor a specific research question could be \textbf{"Are transformer models i
 Two data sets are used to compare the data complexity types. On the more complex side is SCADA wind farm data from \cite{Windpark_Data_1}, which is 10-minute SCADA and event data from the 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021. On the less complex side is electricity consumption data from 3 manufacturing companies in Germany provided by Fraunhofer IPA. The data is available in 15-minute intervals and shows the electricity consumption in a hierarchical representation.
 Do determine the complexity of a data set, the auto correlation is being used as a metric. The lower the auto correlation the higher the data complexity. 
 
-\subsection{Windfarms}
+\subsection{Wind farms}
 
 The two Windmill parks are located on the British Isle, the first park 'Kelmarsh' is located between Cambridge and Birmingham, while the second park is located south-east of Edinburgh on the coast. 
 Table \ref{tab:preprocessing_windturbines} shows a summary of some pre-processing steps conlcuded with the two data sets. A striking fact is the number of outliers in the \textit{Kelmarsh} Park, as well one Z-Score in the \textit{Penmanshiel} Park which indicates a electricity production of
 \begin{equation*}
-    electricity production = \mu + 497 \cdot \sigma
+    \text{electricity production} = \mu + 497 \cdot \sigma
 \end{equation*}
 hence this is being dropped for being a technical mistake, since the wind speed at that time did not change compared to the hours before and after. 
 
@@ -193,7 +193,7 @@ Here it becomes visible that most of the missing values are all found in the beg
 
 For the already mentioned problem of having too many outliers in 3 of 6 turbines remains. Outliers in this context have been defined as
 \begin{equation}
-    |outlier| >= 3 * \left( \frac{x - \mu}{\sigma} \right)
+    |\text{outlier}| >= 3 * \left( \frac{x - \mu}{\sigma} \right)
 \end{equation}
 the factor of three was chosen instead of the more usual two to account for extremes in wind speed especially in the coastal areas. To visualize the potential outliers all values for the Kelmarsh Wind park have been mapped as a kernel density estimation. The left figure \ref{fig:Kelmarsh-distribution} shows that the majority of values are centred around zero, hence no electricity output and presumably no wind speed. But there is also the practice of turning a turbine out of the wind if the situation demands it, hence no electricity production even though there would be enough wind. To test this hypothesis an deeper analysis of the turbine 6 was done to investigate how often this particular turbine was turned out of the wind. This was defined as 
 \begin{equation}
@@ -233,18 +233,24 @@ The extent can also be seen in the visualization of the $6^th$ turbine in the ri
 
 The models selected for evaluation are several different transformer models, an LSTM model and a non-machine learning based model that serves as a benchmark for the other models. For the benchmark task, the Random Forest was chosen because of its numerous applications in the field of time series forecasting in previous work. The models that use deep neural networks are not written from scratch, but come from various publicly available libraries (PyTorch). These basic models are then fine-tuned using hyperparameter search. For the transformer models, various models from renowned papers as well as a self-made shallow transformer are selected to test whether the depth of the network has a large impact on the results. The forecast horizons are 1 hour, 24 hours and 96 hours, with the last forecast being the most difficult task. This last number was chosen because the weather forecasts are also produced for a 96-hour period. This rating is based on the total computational time to evaluate all models and the computational resources in terms of GPU/CPU and RAM usage.\par 
 
-It is difficult to quantify whether a model provides a benefit in terms of increased predictive accuracy compared to the computational costs spent on development. Due to scalability, a small increase in accuracy can justify huge development costs when deployed at scale. The data is first pre-processed in a data pipeline to detect outliers and find missing values that could later affect the models. In a second step, the data is fed into the different models, and each of the datasets is compared against certain metrics to measure the performance of the models. Finally, the results are printed in tabular form and presented graphically for better comparability in the paper.
+It is difficult to quantify whether a model provides a benefit in terms of increased predictive accuracy compared to the computational costs spent on development. Due to scalability, a small increase in accuracy can justify huge development costs when deployed at scale. The data is first pre-processed in a data pipeline to detect outliers and find missing values that could later affect the models. In a second step, the data is fed into the different models, and each of the datasets is compared against certain metrics to measure the performance of the models. Finally, the results are printed in tabular form and presented graphically for better comparability in the paper. \par 
+Though an important question remains, how to assess the goodness of the models in a more qualitative way. Is accuracy more important, than training time and resources or is a intuitive interpretation for a broader audience also important?
+
+The aim for the newly developed model is generalization with complex and less complex data, therefor it is not planned to include layers for extra steps found in other models such as seasonal decomposition or trend analysis.
 
 \subsection{Linear Models}
 
+The linear model used in this thesis is nothing new, but is regarded as a benchmark towards the other models. To compare the more complex models to a very simple model, with the expectation that the more complex models outperform the simpler models. If that is not going to be the case or they achieve similar results, than the models are regarded as failures and are being discarded. \par 
 
+The linear model is based on the same starting conditions as the other models, the same lags, the same variables in a multivariate context and the same data for the train, validation and test sections. What is not being included is a layer for seasonal decomposition as well as trend cycles, since the aim is to develop models can perform reasonable well without these to increase their generalization performance. 
 
 \subsection{Machine Learning Models}
 
 
 \subsection{DeepLearning Models}
 
-The goal in this section is to create a distinct Transformer model for time series forecasting, not from scratch but to dissect several different published models and evaluate what each of these models did differently and if the innovative parts is beneficial to this context and data. To get an understanding of the models one has to first in what regard each one differentiates from the vanilla model and also why and how they did it.
+The goal in this section is to create a distinct Transformer model for time series forecasting, not from scratch but to dissect several different published models and evaluate what each of these models did differently and if the innovative parts is beneficial to this context and data. To get an understanding of the models one has to first in what regard each one differentiates from the vanilla model and also why and how they did it. \par 
+Since the DeepLearning Models are in the centre of the research a thorough valuation of the performance of these models is conducted. With the different architectures different strategies to solve the same problem are being introduced. Therefor the results of all transformer models are compared separately in more depth, to investigate which of the architectures and strategies achieve the best performance. 
 
 \subsubsection{Vanilla Transformer}
 
@@ -272,7 +278,9 @@ The idea is the differentiation between 'active' and 'lazy' parts where respecti
 
 Another interesting aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
 
+\subsubsection{Autoformer}
 
+\cite{autoformer}
 
 
 
