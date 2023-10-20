@@ -1,0 +1,276 @@
+\documentclass{article}
+
+\usepackage[a4paper, total={6in, 8.5in}]{geometry}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{wrapfig}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{siunitx} % Required for alignment
+
+\title{Paper Summaries for Master Thesis}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Probabilistic Transformer for Time Series Analysis}
+\subsection{Introduction and Objective}
+
+The paper titled "Probabilistic Transformer for Time Series Analysis" by Binh Tang and David S. Matteson from Cornell University aims to address the challenges in generative modeling of multivariate time series. The authors propose a novel approach that combines state-space models (SSMs) with transformer architectures. The focus is on creating models that can handle complex, non-deterministic dynamics across long-distance time steps, particularly for applications like demand forecasting, autonomous driving, and healthcare.
+
+\subsection{Methodology}
+
+The authors introduce the Probabilistic Transformer (ProTran), which incorporates attention mechanisms to model non-Markovian dynamics in the latent space. Unlike traditional SSMs, ProTran avoids the use of recurrent neural networks and instead employs a hierarchical structure of stochastic latent variables for increased expressiveness.
+\begin{enumerate}
+    \item Single-Layered Model: The generative model uses a Gaussian distribution parameterized by two sequential steps of attention—one self-attention over previously inferred states and another attention over projected contexts. The inference model shares most parameters with the generative model and is trained end-to-end using stochastic variational inference.
+    \item Multi-Layered Extension: The authors extend ProTran to include multiple layers of latent variables. This hierarchical structure allows for more flexibility in modeling complex temporal dependencies. The multi-layered model also uses self-attention mechanisms and is trained using a similar variational inference framework.
+    \item Computational Aspects: The model has a time complexity of O(T2d)O(T2d) and a memory cost of O(T2d)O(T2d), where TT is the total sequence length and dd is the dimensionality of the latent space.
+\end{enumerate}
+
+\subsection{Main Findings}
+\begin{itemize}
+    \item ProTran is probabilistic, non-autoregressive, and capable of generating diverse long-term forecasts with uncertainty estimates.
+    \item The model outperforms various state-of-the-art baselines in tasks like time series forecasting and human motion prediction.
+    \item The multi-layered extension of ProTran offers increased flexibility and expressiveness, making it suitable for real-world applications with complex emissions or temporal dependencies.
+\end{itemize}
+
+\subsection{Summary Bullet Points}
+\begin{itemize}
+    \item Introduction of Probabilistic Transformer (ProTran) that combines SSMs and transformer architectures for time series analysis.
+    \item Utilization of attention mechanisms to model non-Markovian dynamics, avoiding the limitations of recurrent neural networks.
+    \item Hierarchical structure of stochastic latent variables for increased model expressiveness.
+    \item ProTran outperforms state-of-the-art baselines in various tasks, demonstrating its effectiveness and versatility.
+\end{itemize}
+
+\newpage
+\section{Are Transformers Effective for Time Series Forecasting?}
+
+\subsection{Introduction and Objective}
+The paper titled "Are Transformers Effective for Time Series Forecasting?" by Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang Xu challenges the effectiveness of Transformer-based models for long-term time series forecasting (LTSF). The authors question whether the self-attention mechanism in Transformers, which is inherently permutation-invariant, is suitable for tasks that require understanding the temporal relations in a sequence of data points.
+
+\subsection{Methodology}
+The authors introduce a simple model called LTSF-Linear to serve as a baseline for comparison with Transformer-based models. This model uses a one-layer linear regression to directly forecast future time series based on historical data. The model is embarrassingly simple but serves to challenge the complexity and effectiveness of existing Transformer-based models.
+
+\begin{enumerate}
+    \item \textbf{LTSF-Linear Model}: The model uses a single linear layer to directly regress historical time series data for future prediction. It employs a weighted sum operation, where \( W \in \mathbb{R}^{T \times L} \) is a linear layer along the temporal axis. \( X_i \) and \( \hat{X}_i \) are the input and prediction for each \( i^{th} \) variate, respectively.
+    \item \textbf{Comparison Metrics}: The paper uses Mean Squared Error (MSE) and Mean Absolute Error (MAE) as core metrics for performance evaluation.
+    \item \textbf{Datasets}: The authors conduct experiments on nine widely-used real-world datasets that cover various applications like traffic, energy, economics, weather, and disease predictions.
+\end{enumerate}
+
+\subsection{Main Findings}
+\begin{itemize}
+    \item LTSF-Linear outperforms existing Transformer-based models in all cases, often by a large margin (20\% - 50\%).
+    \item Most Transformer-based models fail to extract temporal relations effectively, as evidenced by their performance not improving (sometimes even deteriorating) with the increase of look-back window sizes.
+    \item The paper suggests that the temporal modeling capabilities of Transformers for time series are exaggerated.
+\end{itemize}
+
+\subsection{Summary Bullet Points}
+\begin{itemize}
+    \item Introduction of a simple one-layer linear model, LTSF-Linear, as a new baseline for long-term time series forecasting.
+    \item Comprehensive empirical studies reveal that LTSF-Linear outperforms complex Transformer-based models.
+    \item The paper challenges the effectiveness of Transformer-based models for time series forecasting, advocating for a reevaluation of their applicability in this domain.
+\end{itemize}
+
+\newpage
+\section{Energy forecasting tools and services}
+
+The paper "Energy forecasting tools and services" provides a comprehensive overview of the various tools and techniques available for energy-related forecasting, particularly focusing on load and volatile renewable power. The authors aim to guide both researchers and practitioners through the labyrinth of existing tools and services, making it easier to understand what each offers.
+
+\subsection{Methodology}
+
+The paper is divided into four main sections:
+\begin{enumerate}
+    \item Background information on time series forecasting.
+    \item Specific properties of energy time series and information regarding load and volatile renewable power forecasting.
+    \item Description and categorization of various energy forecasting tools and services.
+    \item Conclusion summarizing the findings.
+\end{enumerate}
+
+The authors provide a detailed explanation of the most commonly used forecasting models, such as Exponential Smoothing and ARIMA, and their applications in energy forecasting. They also discuss the importance of considering weather parameters like solar irradiation and wind speed, which significantly influence renewable energy production.
+
+\subsection{Types of Forecasting Models}
+
+The paper categorizes forecasting models into three types:
+
+\begin{itemize}
+    \item White-box models: Utilize known relations and expert knowledge.
+    \item Black-box models: Rely solely on data mining techniques.
+    \item Gray-box models: A combination of white and black-box models.
+\end{itemize}
+
+\subsection{Point vs. Probabilistic Forecasting}
+
+The authors highlight the growing interest in probabilistic forecasting, which provides information about forecast uncertainty, in contrast to traditional point forecasting models.
+
+\subsection{Main Findings}
+
+\begin{itemize}
+    \item The paper serves as a comprehensive guide for understanding various energy forecasting tools and services.
+    \item Exponential Smoothing and ARIMA models are commonly used for energy-related time series forecasting.
+    \item Weather parameters like solar irradiation and wind speed are crucial for renewable energy forecasting.
+    \item There is a growing interest in probabilistic forecasting to understand forecast uncertainty.
+\end{itemize}
+
+\newpage
+\section{Make Transformer Great Again for Time Series Forecasting: Channel Aligned Robust Dual Transformer}
+
+\subsection{Introduction}
+The paper introduces a specialized Transformer model, known as the Channel Aligned Robust Dual Transformer (CARD), designed to address the limitations of using standard Transformer models for time series forecasting. The authors argue that despite the Transformer's success in Natural Language Processing (NLP) and Computer Vision (CV), its application in time series forecasting has been less effective compared to Multi-Layer Perceptrons (MLPs).
+
+\subsection{Methodology}
+The CARD model introduces two key innovations:
+\begin{itemize}
+    \item \textbf{Dual Transformer Structure}: Unlike typical transformers that only capture temporal dependencies, the dual structure in CARD captures both temporal correlations among signals and dynamic dependencies among multiple variables over time.
+    \item \textbf{Robust Loss Function}: A new loss function is introduced to weigh the importance of forecasting over a finite horizon based on prediction uncertainties, aiming to mitigate the overfitting issue.
+\end{itemize}
+
+\subsubsection{Tokenization}
+The authors adopt a tokenization strategy that converts the input time series into a token tensor. This is done to make the attention scheme more efficient compared to the vanilla point-wise counterpart.
+
+\subsubsection{Dual Attention Mechanism}
+The dual attention mechanism operates both over tokens and hidden dimensions. Exponential Moving Average (EMA) is applied to stabilize the training process.
+
+\subsubsection{Dynamic Projection}
+To handle high-dimensionality and reduce computational overhead, a dynamic projection technique is used in the attention mechanism over channels.
+
+\subsubsection{Signal Decay-based Loss Function}
+The authors introduce a new loss function that takes into account the variance of future observations, giving more weight to near-future predictions.
+
+\subsection{Results}
+CARD outperforms state-of-the-art models on multiple long-term and short-term forecasting datasets, confirming the effectiveness of the self-attention scheme.
+
+\subsection{Key Takeaways}
+\begin{itemize}
+    \item CARD efficiently and robustly aligns information among different channels.
+    \item The model demonstrates superior performance in both long-term and short-term forecasting.
+    \item The robust signal decay-based loss function effectively improves the model's performance.
+\end{itemize}
+
+
+\newpage
+\section{A Review on Deep Learning Models for Forecasting Time Series Data of Solar Irradiance and Photovoltaic Power}
+
+\subsection{Introduction}
+The paper reviews deep learning models for forecasting time series data related to solar irradiance and photovoltaic (PV) power. The focus is on comparing the performance of three standalone models—Recurrent Neural Network (RNN), Long Short-Term Memory (LSTM), and Gated Recurrent Unit (GRU)—and one hybrid model—Convolutional Neural Network-LSTM (CNN–LSTM).
+
+\subsection{Methodology}
+The authors compare the selected models based on various criteria such as accuracy, input data, forecasting horizon, type of season and weather, and training time. The performance metrics used for comparison include the root-mean-square error (RMSE) and relative RMSE.
+
+\subsection{Key Findings}
+\begin{itemize}
+    \item LSTM shows the best performance among standalone models in terms of RMSE.
+    \item The hybrid model (CNN–LSTM) outperforms the standalone models but requires a longer training time.
+    \item Deep learning models are more suitable for predicting solar irradiance and PV power compared to other conventional machine learning models.
+    \item The authors recommend using relative RMSE as the representative evaluation metric for facilitating accuracy comparison between studies.
+\end{itemize}
+
+\subsection{Implications}
+The paper provides valuable insights into the applicability and limitations of deep learning models in solar energy forecasting. It serves as a comprehensive guide for researchers and practitioners in selecting the most appropriate model based on specific requirements and conditions.
+
+\newpage
+\section{Scalable Reservoir Computing on Coherent Linear Photonic Processor}
+
+\subsection{Introduction}
+The paper presents a novel approach to photonic neuromorphic computing using a scalable on-chip photonic implementation of a simplified recurrent neural network, known as a reservoir computer. The study leverages the ultrawide bandwidth and parallel processing capabilities of photonic computing hardware for ultrafast and energy-efficient computation.
+
+\subsection{Methodology}
+The authors employ a coherent linear photonic processor to implement the reservoir computer. Both the input and recurrent weights are encoded in the spatiotemporal domain by photonic linear processing. This is in contrast to previous approaches that rely on electrical components, which limit bandwidth and scalability. The architecture uses an array of Mach-Zehnder interferometers (MZIs) for various types of optical topologies. The system is driven by an optical pulse source that up-converts the input signals to a higher frequency region beyond the electrical bandwidth. The paper also introduces the concept of parallel processing based on wavelength division multiplexing (WDM), allowing the use of ultrawide optical bandwidth as a computational resource.
+
+\subsection{Results}
+Experiments were conducted for standard benchmarks, showing good performance for chaotic time-series forecasting and image classification. The device can perform 21.12 tera multiplication-accumulation operations per second (MAC/s) for each wavelength and can reach petascale computation speed on a single photonic chip using WDM.
+
+\subsection{Main Findings}
+\begin{itemize}
+    \item Demonstrated a scalable on-chip photonic implementation of a reservoir computer.
+    \item Introduced spatiotemporal encoding of both input and recurrent weights, enabling ultrafast computing beyond electrical bandwidth.
+    \item Showed the potential for petascale computation speed on a single photonic chip using WDM.
+    \item Achieved good performance on standard benchmarks for chaotic time-series forecasting and image classification.
+\end{itemize}
+
+\newpage
+\section{Temporal Convolutional Networks Applied to Energy-Related Time Series Forecasting}
+
+\subsection{Introduction}
+The paper aims to address the challenges in energy demand forecasting by employing Temporal Convolutional Networks (TCNs). The authors argue that TCNs offer advantages over traditional Long Short-Term Memory (LSTM) networks, particularly in capturing long-term dependencies and computational efficiency. The study focuses on two energy-related time series datasets from Spain: national electric demand and power demand at electric vehicle charging stations.
+
+\subsection{Methodology}
+The authors employ TCNs, a specialized form of Convolutional Neural Networks (CNNs), designed to handle time series data. TCNs use causal dilated convolutions to capture long-term dependencies without information leakage from the future to the past. The paper involves an extensive parameter search, experimenting with more than 1900 models with different architectures and parameter settings.
+
+\subsubsection{Data Preprocessing}
+The data is preprocessed using min-max normalization and transformed into a format suitable for multi-step forecasting. A moving window scheme is used to create input-output pairs for the neural network.
+
+\subsubsection{Model Architecture}
+The TCN model is designed to output a complete forecasting window, adhering to the Multi-Input Multi-Output (MIMO) strategy. This approach allows the model to capture dependencies between the predicted values and avoids the accumulation of errors over predictions.
+
+\subsection{Main Findings}
+\begin{itemize}
+    \item TCNs outperform LSTMs in forecasting accuracy for both national electric demand and electric vehicle power demand.
+    \item TCNs are computationally more efficient, offering advantages in real-time applications.
+    \item The extensive parameter search validates the robustness of the TCN architecture for energy-related time series forecasting.
+\end{itemize}
+
+\newpage
+\section{Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting}
+
+\subsection{Introduction}
+The paper introduces Temporal Fusion Transformer (TFT), a deep learning architecture designed for multi-horizon time series forecasting. Unlike traditional models, TFT aims to provide both high-performance forecasting and interpretability. It is designed to handle a variety of inputs, including static covariates, known future inputs, and other exogenous time series, offering a more flexible and robust approach to time series forecasting.
+
+\subsection{Methodology}
+TFT employs a combination of specialized components to achieve its goals:
+
+\begin{itemize}
+    \item \textbf{Gating Mechanisms:} These allow the model to adaptively control its complexity, enabling it to handle a wide range of datasets and scenarios.
+    \item \textbf{Variable Selection Networks:} These are used to select relevant input variables at each time step.
+    \item \textbf{Static Covariate Encoders:} These integrate static features into the network, providing context for temporal dynamics.
+    \item \textbf{Temporal Processing:} A sequence-to-sequence layer is used for local processing, while a multi-head attention block captures long-term dependencies.
+    \item \textbf{Quantile Forecasts:} TFT uses quantile regression to provide prediction intervals, offering a measure of uncertainty in its forecasts.
+\end{itemize}
+
+\subsection{Main Findings}
+\begin{itemize}
+    \item TFT outperforms existing benchmarks in multi-horizon time series forecasting.
+    \item The architecture provides valuable insights into the importance of different features and their temporal dynamics.
+    \item The model is highly adaptable and can be applied to a wide range of real-world scenarios.
+\end{itemize}
+
+\newpage
+\section{A Worrying Analysis of Probabilistic Time-series Models for Sales Forecasting}
+
+\subsection{Introduction}
+The paper aims to rigorously evaluate the performance of three popular probabilistic time-series models—DeepAR, DeepState, and Prophet—in the context of sales forecasting. The authors employ a large-scale dataset, named EC dataset, and standardized training and hyperparameter selection to ensure a fair comparison.
+
+\subsection{Methodology}
+The authors set up two experimental principles:
+\begin{enumerate}
+    \item Utilization of a large-scale dataset with various cross-validation sets.
+    \item Standardized training and hyperparameter selection for all models.
+\end{enumerate}
+Three probabilistic models—DeepAR, DeepState, and Prophet—are compared against four baseline models: Moving Average (MA), Linear Regression (LR), Multi-layer Perceptron (MLP), and Seasonal ARIMA (SARIMA).
+
+\subsection{Results}
+The paper finds that simple models like MLP and Linear Regression outperform the more complex probabilistic models on RMSE (Root Mean Squared Error) and MAPE (Mean Absolute Percentage Error) metrics. Specifically, MLP had the lowest RMSE and MAPE, followed by Linear Regression.
+
+\subsection{Discussion}
+The paper suggests that while probabilistic models like DeepAR are good for capturing uncertainty, they may not be the best for point estimation tasks such as RMSE and MAPE. The authors also highlight the importance of feature scaling and the limitations of DeepState in capturing complex system dynamics.
+
+\subsection{Conclusions}
+\begin{itemize}
+    \item Simple models like MLP and LR outperform probabilistic models in RMSE and MAPE.
+    \item Probabilistic models are not necessarily better for all types of forecasting tasks.
+    \item Feature scaling plays a critical role in the performance of these models.
+\end{itemize}
+\end{document}
