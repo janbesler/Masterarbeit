@@ -238,6 +238,43 @@ Though an important question remains, how to assess the goodness of the models i
 
 The aim for the newly developed model is generalization with complex and less complex data, therefor it is not planned to include layers for extra steps found in other models such as seasonal decomposition or trend analysis.
 
+\subsection{Model Evaluation}
+
+To determine whether a Model is successful in their task, standardised methods of comparison are needed. These already exist for the accuracy, as the metric to determine the goodness of a model is measured in how small the error of a model is. These errors can be measured in different ways, with the most prominent ones in regression analysis being:
+
+The Mean Absolute Error (MAE) is a widely used metric for evaluating the performance of regression models. It is defined as the average of the absolute differences between the predicted and actual values. Mathematically, it is expressed as:
+
+\begin{equation}
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+\end{equation}
+
+where \(y_i\) and \(\hat{y}_i\) are the actual and predicted values, respectively, and \(n\) is the number of observations. MAE is easy to interpret and provides a linear penalty for each unit of difference between the predicted and actual values \cite{MAE_RMSE}.
+Mean Absolute Percentage Error (MAPE) is another metric commonly used for evaluating regression models, particularly when the data spans several orders of magnitude. It is defined as:
+
+\begin{equation}
+\text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+\end{equation}
+
+MAPE expresses the error as a percentage, making it unitless and easier to compare across different scales \cite{MAPE}.
+Mean Squared Error (MSE) is a metric that measures the average of the squares of the errors between the predicted and actual values. It is defined as:
+
+\begin{equation}
+\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+\end{equation}
+
+MSE penalizes larger errors more severely than smaller ones, making it sensitive to outliers \cite{MSE}.
+Root Mean Squared Error (RMSE) is the square root of MSE and is defined as:
+
+\begin{equation}
+\text{RMSE} = \sqrt{\text{MSE}}
+\end{equation}
+
+RMSE has the same units as the dependent variable and is particularly useful when large errors are undesirable \cite{MAE_RMSE}.\par 
+
+Utilizing each of these error metrics a wider range of potential problems and areas of interest (like the penalising of outliers) can be covered. But what is scarcely being looked upon are other metrics of evaluating models besides the accuracy, this includes resource efficiency and computational requirements linked to that the time to train and an intuitive interpretation of the results. In this thesis, these measurements are playing a bigger role in evaluating models besides the accuracy. Especially resource efficiency is playing a bigger role as shown by \cite{AI_energy_consumption} and \cite{resource_awareness}. One of the problems lies in size and complexity of machine learning models which alongside the volume of data required for the training have been experiencing exponential growth, thereby demanding more computational resources. This trend has outpaced the advancements in computing hardware platforms, storage infrastructure, and networking capabilities, leading to sustainability challenges. Some papers such as \cite{Informer} have implemented some aspects to reduce the computational efficiency, but their idea was more about training time than resource efficiency. \par 
+The problem with evaluating the resource efficiency, is the lack of a proper framework and standardised measurements. It is not in the scope if this thesis to develop such frameworks, but to map the resources used to train different models on the same data and further the time spend during the whole development process on training, testing and performing inference on cloud computers is mapped, evaluated and critically viewed for improvements and saving opportunities.
+
+
 \subsection{Linear Models}
 
 The linear model used in this thesis is nothing new, but is regarded as a benchmark towards the other models. To compare the more complex models to a very simple model, with the expectation that the more complex models outperform the simpler models. If that is not going to be the case or they achieve similar results, than the models are regarded as failures and are being discarded. \par 
