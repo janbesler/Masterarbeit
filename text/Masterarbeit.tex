@@ -103,33 +103,28 @@ In the area of electricity generation and consumption, forecasting is a relevant
 The deep learning models used, are probabilistic and not deterministic. This is due to the advantages of probabilistic models when working with noisy data and the resulting probability distributions as outcomes instead of deterministic values. With the ability to quantify the uncertainty of forecasts, there is an advantage to modelling in a probabilistic way by understanding the range and probability of possible outcomes. Even if there is no exact value for the outcome, ranges can be given to estimate how big the impact will be.
 However, the disadvantages of working with probabilistic models are the increased complexity due to working with probability distributions as outcomes, making the results less intuitive to interpret. In addition, the increased complexity leads to higher computational costs and thus greater demands on limited resources.
 
+%%%% TEST %%%%
+
+The critical importance of time series forecasting in the advancement of renewable energy systems underscores the need for effective predictive models. The advent of Large Language Models (LLMs) such as ChatGPT in early 2023 has reignited interest in the underlying transformer models, whose sequential data processing capabilities have shown promise beyond the confines of Natural Language Processing (NLP). Despite their success, the adoption of transformer models in domains like time series forecasting, where data is inherently sequential, is not ubiquitous, presenting a research opportunity to investigate their relative efficacy compared to established models such as Long Short Term Memory (LSTM) networks.
+
+Zeng et al., 2022 posited that the complexity of the data dictates the performance superiority between these models, a hypothesis that is both compelling and critical for applications where precision forecasting is pivotal. This thesis aims to explore this hypothesis by comparing the performance of different models on datasets with varying complexity levels, specifically focusing on wind turbine data for complex scenarios and electricity consumption for less complex cases. These domains have been strategically selected for their acute relevance to energy management and the pursuit of decarbonization.
+
+The imperative to match electricity demand with the fluctuating supply from renewable sources, and the need for grid stability, establish a real-world urgency for this research. Probabilistic deep learning models offer a means to address these challenges, with their advantages in managing noisy data and providing forecasts with quantified uncertainties. This thesis will also scrutinize the trade-offs presented by probabilistic models, such as increased computational costs and the nuanced interpretation of their probabilistic outcomes. Through this analysis, the research endeavors to contribute to the optimization of energy systems and to the broader understanding of the applicability of advanced predictive models in strategic decision-making.
+
 \subsection{Research Question}
 
-The overarching goal is to investigate whether the transformer models bring such advantageous properties in terms of accuracy to justify the added complexity, as it has successfully happened in the NLP context. The aspects to focus on are the direct comparison with another deep learning model to evaluate if the transformer is actually performing better than a less complex LSTM model. And also how much time and resources the development takes up to come to a qualitative conclusion if a transformer model is worth the effort for the potential benefit versus other models. \par 
-Therefor a specific research question could be \textbf{"Are transformer models in time series forecasting worth the hustle? A data driven approach"}. To answer this rather vague question, the steps towards this end goal are formulated in several sub questions to guide the way. 
+This study aims to critically assess the value added by transformer models in time series forecasting by examining their accuracy, complexity, and resource demands in comparison to less complex models such as LSTMs. The research will seek to determine whether the benefits provided by transformers justify their implementation in practical applications where time and resources are significant constraints. Consequently, the central research question is articulated as follows: "To what extent do transformer models in time series forecasting provide a justifiable advantage over traditional methods considering their complexity and resource consumption?"
+
+To address this multifaceted question, the research will be guided by a series of sub-questions:
 
 \begin{enumerate}
-    \item How are good models assessed in a qualitative way?
-        \begin{itemize}
-            \item accuracy vs time to train vs intuitive interpretation vs resources used
-        \end{itemize}
-    \item How are the two data sets and thus the results comparable?
-        \begin{itemize}
-            \item time intervals and time zones
-            \item how are missing/false values handled
-            \item weather conditions comparable/relevant
-        \end{itemize}
-    \item Do Transformer outperform linear and LSTM models?
-        \begin{itemize}
-            \item under what settings does this happen
-            \item how much improvement can be achieved
-        \end{itemize}
-    \item Which of the selected Transformer Models performs best?
-        \begin{itemize}
-            \item accuracy to training time ratio
-            \item what architecture properties does the better models have
-        \end{itemize}
+    \item What constitutes an effective model in time series forecasting, balancing accuracy, training duration, interpretability, and resource utilization?
+    \item How can we ensure comparability between different datasets to validate the results, accounting for variations in time intervals, time zones, data integrity, and relevance of external factors such as weather conditions?
+    \item Under what circumstances do transformer models excel over linear and LSTM models, and what is the magnitude of improvement observed?
+    \item Among the various transformer models analyzed, which demonstrates superior performance, and what are the distinguishing architectural features that contribute to this performance?
 \end{enumerate}
+
+Through this structured inquiry, the thesis will contribute to a nuanced understanding of the applicability and efficacy of transformer models in the field of time series forecasting.
 
 \section{Related Work}
 
@@ -274,6 +269,18 @@ RMSE has the same units as the dependent variable and is particularly useful whe
 Utilizing each of these error metrics a wider range of potential problems and areas of interest (like the penalising of outliers) can be covered. But what is scarcely being looked upon are other metrics of evaluating models besides the accuracy, this includes resource efficiency and computational requirements linked to that the time to train and an intuitive interpretation of the results. In this thesis, these measurements are playing a bigger role in evaluating models besides the accuracy. Especially resource efficiency is playing a bigger role as shown by \cite{AI_energy_consumption} and \cite{resource_awareness}. One of the problems lies in size and complexity of machine learning models which alongside the volume of data required for the training have been experiencing exponential growth, thereby demanding more computational resources. This trend has outpaced the advancements in computing hardware platforms, storage infrastructure, and networking capabilities, leading to sustainability challenges. Some papers such as \cite{Informer} have implemented some aspects to reduce the computational efficiency, but their idea was more about training time than resource efficiency. \par 
 The problem with evaluating the resource efficiency, is the lack of a proper framework and standardised measurements. It is not in the scope if this thesis to develop such frameworks, but to map the resources used to train different models on the same data and further the time spend during the whole development process on training, testing and performing inference on cloud computers is mapped, evaluated and critically viewed for improvements and saving opportunities.
 
+The previously introduced error metrics are not developed to handle probabilistic forecasts, unlike the Continuous Ranked Probability Score (CRPS) developed by \cite{Loss_Function} which is perfectly suited for probabilistic forecasts. This metric is especially suited for the evaluation since for a deterministic forecast, the metric becomes the MAE. Thus deterministic and probabilistic models can be evaluated using the same metric. Further this metric can also be used as a loss function, for the transformer models as a replacement for the usual cross entropy loss, since it has been used for probabilistic weather forecasts in several papers as \cite{CRPS_example_1, CRPS_example_2, CRPS_example_3} show. \par 
+It is defined as:
+\begin{equation}
+    CRPS(F, x) = \int_{-\infty}^{\infty} ( F(y) - \mathcal{H}(y-x) )^{2} dy
+\end{equation}
+where $F$ is a cumulative distribution function of $X$, for example $F(y) = \mathbf{P}[X \leq y]$ with $x$ being the observation and $F$ is associated with an empirical distribution forecast. $\mathcal{H}$ is a step function along the real line that attains
+\begin{equation}
+    \mathcal{H} = \begin{cases}
+        1, & \mathbb{R} \geq 0 \\
+        0, & \text{otherwise}
+    \end{cases}
+\end{equation}
 
 \subsection{Linear Models}
 
@@ -305,8 +312,6 @@ where $T$ is the length of the time series and $D$ is the dimension of the hidde
 \end{equation*}
 The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered
 
-
-
     Quadratic computation of canonical self-attention:
     The vanilla Transformer has a computational complexity of  where TT is the time series length and DD is the dimension of the hidden states. For long sequence time-series forecasting (also known as the LSTF problem), this might be really computationally expensive. To solve this problem, Informer employs a new self-attention mechanism called ProbSparse attention, which has time and space complexity.
     
@@ -319,8 +324,49 @@ Another interesting aspect that this paper utilises is the use of \textit{Probab
 
 \cite{autoformer}
 
+\subsection{eFormer}
 
+The eFormer is going to be the core of this analysis, it targets to be a domain specific probabilistic transformer model that outperforms more general models like the previously introduced Informer and Autoformer models. Even though the main performance measurement is going to be the accuracy of the forecast, another relevant metric to evaluate this model is the training time and resource consumption. Since this model is aimed to be as lightweight as possible. This should be achieved by dropping the entire decoder part and only use a minimal amount of layers and fewer heads than comparable models. While not writing new layers or parts, this paper uses already published parts from papers and searches for the optimal composition and combination to achieve the set goals. \par
+The model architecture consists of the time2vec embeddings created by \cite{time2vec}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer} that resides in a different head to the previous attention mechanism. The two attention modules are not used in a row after one another, but separately. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too often, leaving fewer elements in the weight than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant, while the deterministic variants have a probabilistic layer as second last layer. In a later attempt the goal is to combine the best working models from both attention mechanisms into one coherent structure, where each odd weight update is mechanism A and each even weight update is mechanism B. \par
+In the case that the encoder only structure is not providing good results. The vanilla decoder from the "Attention is all you need" Paper is tweaked to work with my edited encoder.
 
+\subsubsection{Embeddings \& Positional Encodings}
+
+\begin{itemize}
+    \item deterministic since no uncertainty is required
+    \item easier for computer to understand time when used as sinus function
+    \item 
+\end{itemize}
+
+\subsubsection{Sparse Attention}
+
+\begin{itemize}
+    \item probabilistic
+    \item encoder only, "decoder" only with empty time embeddings for forecasting
+    \item 
+\end{itemize}
+
+This part replaces the vanilla attention mechanism and focuses on dropping sections from the time series that it deems not relevant enough to keep tracking. The decision about which parts are worthwhile to chase and which parts are not are determined by the model using a threshold which is set by the variables \textit{attention\_dropout} and \textit{prob\_sparse\_factor}.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{graphs/Sparse_Attention_Example.png}
+    \caption{Vanilla self Attention and Sparse Attention from Informer}
+    \label{fig:sparse_attention}
+\end{figure}
+
+There is no masking in place since it is not necessary to withhold information from the decoder as none exists in its intended form. The only part that is in the decoders place is an empty vector with the time horizons that are being forecasted. These timestamps are being converted using the same positional encoding as in the embeddings part. Therefor all that is going to happen in the 'decoder' part is the continuation of predicting values for unseen timestamps.
+
+There exist two versions of the same eFormer with sparse attention, in one case the variance is calculated already in the attention mechanism and from there kept and updated alongside the mean, while the second case only calculates with the mean until the very end where the variance is calculated just after the softmax layer and before the forecast output is produced. The idea is to investigate whether there are benefits to keep track of the variance for the majority of the time and risk the higher computational costs which are expected due to twice the storage and calculation of an additional matrix. It is expected that the approach with the variance calculation early on yields higher accuracy, due to the set of additional trainable variables. And that the variance is more nuanced in some areas which in return can be also interpreted further and result in more information gained. It can for example be advantageous to know for during which time the variance is smaller or larger to imply policy predictions from that knowledge. 
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{graphs/eFormer_probSparse.png}
+    \caption{eFormer Sparse Attention}
+    \label{fig:eFormer_sparse}
+\end{figure}
+
+\subsubsection{Auto Correlation Attention}
 
 \newpage
 
