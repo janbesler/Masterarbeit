@@ -3,3 +3,4 @@ Registration_*.pdf
 *.csv
 *.zip
 /src/Time-Series-Library
+*.pyc

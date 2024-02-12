@@ -27,36 +27,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # %% [markdown]
-# # Probabilistic Sparse Attention
+# # Deterministic Sparse Attention
 # 
 # Credit to [Informer](https://github.com/zhouhaoyi/Informer2020)
 # 
-# Processing mean and variance:
-# 
-# - Separate Attention Layers: The model now has separate attention layers for processing means and variances. This allows each component to be updated based on its own dynamics.
-# - Processing Means and Variances: Both components are processed through their respective attention layers.
-# - Combining Outputs: The outputs (updated means and variances) are then concatenated to form the final output tensor.
 
 # %%
-class ProbabilisticEmbeddingSampler(nn.Module):
-    """Samples embeddings from a Gaussian distribution centered around the input embeddings."""
-    def __init__(self, embeddings):
-        super(ProbabilisticEmbeddingSampler, self).__init__()
-        # Learnable parameters for variance
-        self.log_variance = nn.Parameter(torch.zeros(embeddings))
-    
-    def forward(self, embeddings):
-        # Standard deviation from log variance
-        std = torch.exp(0.5 * self.log_variance)
-        # Reparameterization trick for sampling
-        eps = torch.randn_like(embeddings)
-        sampled_embeddings = embeddings + eps * std
-        return sampled_embeddings
-
-# %%
-class ProbAttention(nn.Module):
+class DetAttention(nn.Module):
     def __init__(self, mask_flag=False, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
-        super(ProbAttention, self).__init__()
+        super(DetAttention, self).__init__()
         self.factor = factor
         self.scale = scale
         self.mask_flag = mask_flag
@@ -182,20 +161,18 @@ class AttentionLayer(nn.Module):
         return self.out_projection(out), attn
 
 # %%
-class SparseAttentionModule_Prob(nn.Module):
+class SparseAttentionModule_Det(nn.Module):
     def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1):
-        super(SparseAttentionModule_Prob, self).__init__()
-        self.sampler = ProbabilisticEmbeddingSampler(d_model)
+        super(SparseAttentionModule_Det, self).__init__()
         self.attention_layer = AttentionLayer(
-            ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
+            DetAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
             d_model=d_model, n_heads=n_heads
         )
-    
+
     def forward(self, embeddings):
-        # Sample embeddings from a Gaussian distribution centered around the input embeddings
-        sampled_embeddings = self.sampler(embeddings)
-        
-        # Use sampled embeddings for attention calculation
-        attention_output, _ = self.attention_layer(sampled_embeddings, sampled_embeddings, sampled_embeddings, None)
+        # Use means for attention calculation
+        attention_output, _ = self.attention_layer(embeddings, embeddings, embeddings, None)
 
         return attention_output
+
+
