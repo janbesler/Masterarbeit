@@ -9,9 +9,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# %% [markdown]
-# # Probabilistic Embeddings
-
 # %%
 def t2v(
     tau, # input tensor
@@ -113,6 +110,7 @@ class Encoding(nn.Module):
 class ProbEncoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(ProbEncoding, self).__init__()
+        self.out_features = out_features
         # Adjustments for out_features to account for separate mean/variance in Probabilistic*Activation
         self.time2vec = ProbabilisticSineActivation(in_features, out_features * 2)  # Adjusted for mean and variance
         self.positional_encoding = PositionalEncoding(out_features, max_len)  # Adjusted accordingly
@@ -122,7 +120,7 @@ class ProbEncoding(nn.Module):
         embeddings = self.time2vec(tau)  # Expecting [1, seq_len, features] for embeddings
         
         # split embeddings
-        embedding_mean, embedding_var = torch.split(embeddings, out_features, dim=-1)
+        embedding_mean, embedding_var = torch.split(embeddings, self.out_features, dim=-1)
         
         # Apply positional encodings separately to mean and variance
         pos_encoded_mean = self.positional_encoding(embedding_mean).to(tau.device)
@@ -133,5 +131,3 @@ class ProbEncoding(nn.Module):
         combined_embeddings = torch.stack([embedding_mean + pos_encoded_mean[:seq_len, :], embedding_var + pos_encoded_var[:seq_len, :]], dim=0)
 
         return combined_embeddings
-
-

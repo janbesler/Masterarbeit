@@ -5,26 +5,13 @@
 # standard
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
 import math
 from math import sqrt
 
-# reading data
-import os
-import json
-from collections import defaultdict
-
 # machine learning
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-# visuals
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # %% [markdown]
 # # Probabilistic Sparse Attention
