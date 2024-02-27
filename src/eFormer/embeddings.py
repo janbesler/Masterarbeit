@@ -2,32 +2,15 @@
 # # Libraries
 
 # %%
-# standard
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
 import math
-from math import sqrt
-
-# reading data
-import os
-import json
-from collections import defaultdict
 
 # machine learning
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# visuals
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 # %% [markdown]
-# # Embeddings
+# # Probabilistic Embeddings
 
 # %%
 def t2v(
@@ -43,35 +26,112 @@ def t2v(
     if arg:
         v1 = f(torch.matmul(tau, w) + b, arg)
     else:
+        #print(w.shape, t1.shape, b.shape)
         v1 = f(torch.matmul(tau, w) + b)
     v2 = torch.matmul(tau, w0) + b0
-
+    #print(v1.shape)
     return torch.cat([v1, v2], -1)
 
-class SineActivation(nn.Module):
+class ProbabilisticSineActivation(nn.Module):
     def __init__(self, in_features, out_features):
-        super(SineActivation, self).__init__()
-        self.out_features = out_features
-        self.w0 = nn.parameter.Parameter(torch.randn(in_features, 1))
-        self.b0 = nn.parameter.Parameter(torch.randn(1))
-        self.w = nn.parameter.Parameter(torch.randn(in_features, out_features-1))
-        self.b = nn.parameter.Parameter(torch.randn(out_features-1))
+        super(ProbabilisticSineActivation, self).__init__()
+        self.out_features = out_features // 2  # Half for mean, half for variance
+        self.w0 = nn.Parameter(torch.randn(in_features, 1))
+        self.b0 = nn.Parameter(torch.randn(1))
+        self.w = nn.Parameter(torch.randn(in_features, self.out_features - 1))
+        self.b = nn.Parameter(torch.randn(self.out_features - 1))
         self.f = torch.sin
 
     def forward(self, tau):
-        return t2v(tau, self.f, self.out_features, self.w, self.b, self.w0, self.b0)
+        # Calculate mean
+        mean = t2v(tau, self.f, self.out_features, self.w, self.b, self.w0, self.b0)
+        
+        # Calculate variance (use another set of weights and biases, ensure positive variance)
+        variance = F.softplus(t2v(tau, self.f, self.out_features, 
+                                  torch.randn_like(self.w), torch.randn_like(self.b), 
+                                  torch.randn_like(self.w0), torch.randn_like(self.b0)))
+        
+        return torch.cat([mean, variance], -1)
 
-class CosineActivation(nn.Module):
+class ProbabilisticCosineActivation(nn.Module):
     def __init__(self, in_features, out_features):
-        super(CosineActivation, self).__init__()
-        self.out_features = out_features
-        self.w0 = nn.parameter.Parameter(torch.randn(in_features, 1))
-        self.b0 = nn.parameter.Parameter(torch.randn(1))
-        self.w = nn.parameter.Parameter(torch.randn(in_features, out_features-1))
-        self.b = nn.parameter.Parameter(torch.randn(out_features-1))
+        super(ProbabilisticCosineActivation, self).__init__()
+        self.out_features = out_features // 2  # Half for mean, half for variance
+        self.w0 = nn.Parameter(torch.randn(in_features, 1))
+        self.b0 = nn.Parameter(torch.randn(1))
+        self.w = nn.Parameter(torch.randn(in_features, self.out_features - 1))
+        self.b = nn.Parameter(torch.randn(self.out_features - 1))
         self.f = torch.cos
 
     def forward(self, tau):
-        return t2v(tau, self.f, self.out_features, self.w, self.b, self.w0, self.b0)
+        # Calculate mean
+        mean = t2v(tau, self.f, self.out_features, self.w, self.b, self.w0, self.b0)
+        
+        # Calculate variance (use another set of weights and biases, ensure positive variance)
+        variance = F.softplus(t2v(tau, self.f, self.out_features, 
+                                  torch.randn_like(self.w), torch.randn_like(self.b), 
+                                  torch.randn_like(self.w0), torch.randn_like(self.b0)))
+        
+        return torch.cat([mean, variance], -1)
+
+# %%
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        # x is expected to have shape [batch_size, seq_len, features]
+        batch_size, seq_len, _ = x.size()
+        # Expanding to match the batch size of x
+        pos_encoding = self.pe[:, :seq_len]
+        
+        return pos_encoding
+
+# %%
+class Encoding(nn.Module):
+    def __init__(self, in_features, out_features, max_len=5000):
+        super(Encoding, self).__init__()
+        self.time2vec = ProbabilisticSineActivation(in_features, out_features) # Or CosineActivation
+        self.positional_encoding = PositionalEncoding(out_features, max_len)
+        
+    def forward(self, tau):
+        # Compute Time2Vec embeddings
+        time_embeddings = self.time2vec(tau)
+        # Add positional encodings
+        seq_len = tau.size(1)  # Assuming (seq_len, features) for tau
+        pos_encodings = self.positional_encoding(time_embeddings).to(tau.device)
+        return time_embeddings + pos_encodings[:seq_len, :]
+
+# %%
+class ProbEncoding(nn.Module):
+    def __init__(self, in_features, out_features, max_len=5000):
+        super(ProbEncoding, self).__init__()
+        # Adjustments for out_features to account for separate mean/variance in Probabilistic*Activation
+        self.time2vec = ProbabilisticSineActivation(in_features, out_features * 2)  # Adjusted for mean and variance
+        self.positional_encoding = PositionalEncoding(out_features, max_len)  # Adjusted accordingly
+        
+    def forward(self, tau):
+        # Generate embeddings (mean and variance separately)
+        embeddings = self.time2vec(tau)  # Expecting [1, seq_len, features] for embeddings
+        
+        # split embeddings
+        embedding_mean, embedding_var = torch.split(embeddings, out_features, dim=-1)
+        
+        # Apply positional encodings separately to mean and variance
+        pos_encoded_mean = self.positional_encoding(embedding_mean).to(tau.device)
+        pos_encoded_var = self.positional_encoding(embedding_var).to(tau.device)
+
+        # Combine mean and variance after applying positional encoding
+        seq_len = tau.size(1)
+        combined_embeddings = torch.stack([embedding_mean + pos_encoded_mean[:seq_len, :], embedding_var + pos_encoded_var[:seq_len, :]], dim=0)
+
+        return combined_embeddings
 
 
