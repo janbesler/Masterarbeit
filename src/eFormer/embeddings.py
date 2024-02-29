@@ -95,16 +95,22 @@ class PositionalEncoding(nn.Module):
 class Encoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(Encoding, self).__init__()
-        self.time2vec = ProbabilisticSineActivation(in_features, out_features) # Or CosineActivation
+        self.out_features = out_features
+        self.time2vec = ProbabilisticSineActivation(in_features, out_features * 2) # Or CosineActivation
         self.positional_encoding = PositionalEncoding(out_features, max_len)
         
     def forward(self, tau):
         # Compute Time2Vec embeddings
-        time_embeddings = self.time2vec(tau)
+        embeddings = self.time2vec(tau)
+
+        # split embeddings
+        embedding_mean, _ = torch.split(embeddings, self.out_features, dim=-1)
+
         # Add positional encodings
-        seq_len = tau.size(1)  # Assuming (seq_len, features) for tau
-        pos_encodings = self.positional_encoding(time_embeddings).to(tau.device)
-        return time_embeddings + pos_encodings[:seq_len, :]
+        seq_len = tau.size(1)
+        pos_encodings = self.positional_encoding(embedding_mean).to(tau.device)
+        
+        return embedding_mean + pos_encodings[:seq_len, :]
 
 # %%
 class ProbEncoding(nn.Module):
