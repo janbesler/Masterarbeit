@@ -326,17 +326,54 @@ Another interesting aspect that this paper utilises is the use of \textit{Probab
 
 \subsection{eFormer}
 
+\begin{itemize}
+    \item deterministic -> uncertainty at end, but not really probabilistic. Based on papers
+    \item uncertainty from begin carried through and also learned
+\end{itemize}
+
 The eFormer is going to be the core of this analysis, it targets to be a domain specific probabilistic transformer model that outperforms more general models like the previously introduced Informer and Autoformer models. Even though the main performance measurement is going to be the accuracy of the forecast, another relevant metric to evaluate this model is the training time and resource consumption. Since this model is aimed to be as lightweight as possible. This should be achieved by dropping the entire decoder part and only use a minimal amount of layers and fewer heads than comparable models. While not writing new layers or parts, this paper uses already published parts from papers and searches for the optimal composition and combination to achieve the set goals. \par
 The model architecture consists of the time2vec embeddings created by \cite{time2vec}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer} that resides in a different head to the previous attention mechanism. The two attention modules are not used in a row after one another, but separately. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too often, leaving fewer elements in the weight than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant, while the deterministic variants have a probabilistic layer as second last layer. In a later attempt the goal is to combine the best working models from both attention mechanisms into one coherent structure, where each odd weight update is mechanism A and each even weight update is mechanism B. \par
 In the case that the encoder only structure is not providing good results. The vanilla decoder from the "Attention is all you need" Paper is tweaked to work with my edited encoder.
 
 \subsubsection{Embeddings \& Positional Encodings}
 
-\begin{itemize}
-    \item deterministic since no uncertainty is required
-    \item easier for computer to understand time when used as sinus function
-    \item 
-\end{itemize}
+For the embeddings of time series data \cite{time2vec} introduce in their paper a framework with the core idea to view time as a sine or cosine function, to highlight its periodical nature. They argue that it is hard for the computer to process that after 12 or 24 hours respectively the next step is 1 o'clock, hence the transformation into a mathematical periodic function. For the eFormer these properties are also going to be incorporated, with the addition of positional encoding.
+Since the aim is to create different versions of probabilistic models, two versions are created for the embeddings. On one hand the deterministic approach, that only passes along the mean values and results in a single tensor. While on the other hand the probabilistic approach also creates variance embeddings directly alongside the original time2vec calculations. But in neither case the calculated vectors are appearing in the back propagation loop of the transformer. This is due to their lack of need for uncertainty, since all the necessary information such as the time and the true values are set and do not need to be learned. \par 
+
+In order to recreate the time2vec transformation, the input tensor $\tau$ is first sinusoidal, then linearly transformed and then the results are concatenated into the embeddings. The following example of the probabilistic embeddings using the sin function, demonstrates this in more detail. Analogous this also works with cosine and deterministic embeddings.
+The sine transformation \eqref{eq:sin-tranform} is based on the \textit{torch.sin} function, where the input tensor $\tau$ is multiplied with a weight matrix $W$ and the biases are added before the sin application. Both the weights and biases consist of randomly generated values from a normal distribution with $\mathcal{N}(0,1)$.
+\begin{equation}\label{eq:sin-tranform}
+    V_1 = sin(\tau \cdot W + B)
+\end{equation}
+    
+While \eqref{eq:sin-tranform} captures the periodic time dependencies, the linear transformation exists to identify possible trends, and linear relationships in the underlying data. The variables are again the input vector $\tau$, the weights $W_0$ and the biases $B_0$, with the difference lying in the dimension, since the weights and biases are only of dimension 1.    
+\begin{equation}\label{eq:lin-tranform}
+    V_2 = \tau \cdot W_0 + B_0
+\end{equation}
+
+When the two transformations are put together using the concatenation function represented by $\oplus$ in \ref{eq:t2v-concat}, the resulting tensor has the feature length of the desired vector length for the embedding vectors. 
+\begin{equation}\label{eq:t2v-concat}
+    t2v(\tau) = V_1 \oplus V_2
+\end{equation}
+For the probabilistic version these steps are repeated twice once for the mean and once for the variance values which in return help to describe the normal distribution on which the estimates lie. The variance is initiated with a different set of variables to have different parameters for the training steps down the line, this is beneficial as it allows to learn the mean and variance independently in case they are not correlated.
+\begin{equation}\label{eq:t2v-var}
+    Variance = softplus \left(sin(\tau \cdot W + B) \oplus \tau \cdot W_0 + B_0 \right)
+\end{equation}
+The \textit{torch.softplus} function assures that there are only positive variances by applying a smooth approximation of the ReLu function. 
+
+After the creation of the embeddings, the data points are no longer marked with time stamps. This problem is apparent with the utilisation of transformer models in general since they do not account for the sequential nature of the data due to their multi-attention heads. Positional encoding is introduced to circumvent this problem. A problem specifically for the probabilistic part lies in the creation of the same encoding for the two parts of mean and variance, since they refer to the same time stamp. To tackle this issue, the data is split an then converted using the same function. Under the perspective of efficient computing this leads to opportunities for parallelization but also higher computational costs.
+
+To give each value in the time series a unique identifying value, these values have to be created first. This includes the calculation for a sine and cosine frequency respectively based on the length of the entire time series, where $d_{model}$ is the dimensionality of the embeddings and $PE(pos, i)$ represents the final positional encoding at position $pos$ and dimension $i$.
+\begin{align}\label{eq:pos-encoding}
+    PE(pos, 2i) &= sin \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right) \\
+    PE(pos, 2i + 1) &= cos \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right)
+\end{align}
+
+With the creation of the embeddings and the positional encoding, the two tensors are then added up to achieve the desired result.
+\begin{equation}
+    Encoded(\tau) = t2v(\tau) + PE(pos,i)
+\end{equation}
+This addition is also repeated for the variance in the probabilistic case. To make it easier in future steps to access the data independently they are stored in the same tensor but in two different dimensions. 
 
 \subsubsection{Sparse Attention}
 
@@ -360,8 +397,17 @@ There is no masking in place since it is not necessary to withhold information f
 There exist two versions of the same eFormer with sparse attention, in one case the variance is calculated already in the attention mechanism and from there kept and updated alongside the mean, while the second case only calculates with the mean until the very end where the variance is calculated just after the softmax layer and before the forecast output is produced. The idea is to investigate whether there are benefits to keep track of the variance for the majority of the time and risk the higher computational costs which are expected due to twice the storage and calculation of an additional matrix. It is expected that the approach with the variance calculation early on yields higher accuracy, due to the set of additional trainable variables. And that the variance is more nuanced in some areas which in return can be also interpreted further and result in more information gained. It can for example be advantageous to know for during which time the variance is smaller or larger to imply policy predictions from that knowledge. 
 
 \begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.5\linewidth]{graphs/eFormer_probSparse.png}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{graphs/eFormer_probSparse.png}
+        \caption{probabilistic}        
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{graphs/eFormer_det_sparse.png}
+        \caption{deterministic}
+    \end{subfigure}
+    \hspace*{\fill}
     \caption{eFormer Sparse Attention}
     \label{fig:eFormer_sparse}
 \end{figure}
