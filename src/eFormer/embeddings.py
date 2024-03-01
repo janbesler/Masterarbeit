@@ -96,7 +96,7 @@ class Encoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(Encoding, self).__init__()
         self.out_features = out_features
-        self.time2vec = ProbabilisticSineActivation(in_features, out_features * 2) # Or CosineActivation
+        self.time2vec = ProbabilisticSineActivation(in_features, out_features) # Or CosineActivation
         self.positional_encoding = PositionalEncoding(out_features, max_len)
         
     def forward(self, tau):
@@ -117,9 +117,9 @@ class ProbEncoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(ProbEncoding, self).__init__()
         self.out_features = out_features
-        # Adjustments for out_features to account for separate mean/variance in Probabilistic*Activation
-        self.time2vec = ProbabilisticSineActivation(in_features, out_features * 2)  # Adjusted for mean and variance
-        self.positional_encoding = PositionalEncoding(out_features, max_len)  # Adjusted accordingly
+        # Adjustments for out_features to account for separate mean/variance in Probabilistic Activation
+        self.time2vec = ProbabilisticSineActivation(in_features, out_features)
+        self.positional_encoding = PositionalEncoding(out_features, max_len)
         
     def forward(self, tau):
         # Generate embeddings (mean and variance separately)
