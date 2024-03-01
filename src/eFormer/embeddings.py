@@ -9,6 +9,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# %% [markdown]
+# # Probabilistic Embeddings
+
 # %%
 def t2v(
     tau, # input tensor
@@ -23,16 +26,15 @@ def t2v(
     if arg:
         v1 = f(torch.matmul(tau, w) + b, arg)
     else:
-        #print(w.shape, t1.shape, b.shape)
         v1 = f(torch.matmul(tau, w) + b)
     v2 = torch.matmul(tau, w0) + b0
-    #print(v1.shape)
+    
     return torch.cat([v1, v2], -1)
 
 class ProbabilisticSineActivation(nn.Module):
     def __init__(self, in_features, out_features):
         super(ProbabilisticSineActivation, self).__init__()
-        self.out_features = out_features // 2  # Half for mean, half for variance
+        self.out_features = out_features
         self.w0 = nn.Parameter(torch.randn(in_features, 1))
         self.b0 = nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.randn(in_features, self.out_features - 1))
@@ -53,7 +55,7 @@ class ProbabilisticSineActivation(nn.Module):
 class ProbabilisticCosineActivation(nn.Module):
     def __init__(self, in_features, out_features):
         super(ProbabilisticCosineActivation, self).__init__()
-        self.out_features = out_features // 2  # Half for mean, half for variance
+        self.out_features = out_features
         self.w0 = nn.Parameter(torch.randn(in_features, 1))
         self.b0 = nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.randn(in_features, self.out_features - 1))
