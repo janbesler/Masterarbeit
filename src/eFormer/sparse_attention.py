@@ -1,5 +1,5 @@
 # %% [markdown]
-# # Libraries
+#  # Libraries
 
 # %%
 # standard
@@ -14,31 +14,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # %% [markdown]
-# # Probabilistic Sparse Attention
+#  # Probabilistic Sparse Attention
 # 
-# Credit to [Informer](https://github.com/zhouhaoyi/Informer2020)
+#  Credit to [Informer](https://github.com/zhouhaoyi/Informer2020)
 # 
-# Processing mean and variance:
+#  Processing mean and variance:
 # 
-# - Separate Attention Layers: The model now has separate attention layers for processing means and variances. This allows each component to be updated based on its own dynamics.
-# - Processing Means and Variances: Both components are processed through their respective attention layers.
-# - Combining Outputs: The outputs (updated means and variances) are then concatenated to form the final output tensor.
-
-# %%
-class ProbabilisticEmbeddingSampler(nn.Module):
-    """Samples embeddings from a Gaussian distribution centered around the input embeddings."""
-    def __init__(self, embeddings):
-        super(ProbabilisticEmbeddingSampler, self).__init__()
-        # Learnable parameters for variance
-        self.log_variance = nn.Parameter(torch.zeros(embeddings))
-    
-    def forward(self, embeddings):
-        # Standard deviation from log variance
-        std = torch.exp(0.5 * self.log_variance)
-        # Reparameterization trick for sampling
-        eps = torch.randn_like(embeddings)
-        sampled_embeddings = embeddings + eps * std
-        return sampled_embeddings
+#  - Separate Attention Layers: The model now has separate attention layers for processing means and variances. This allows each component to be updated based on its own dynamics.
+#  - Processing Means and Variances: Both components are processed through their respective attention layers.
+#  - Combining Outputs: The outputs (updated means and variances) are then concatenated to form the final output tensor.
 
 # %%
 class ProbAttention(nn.Module):
@@ -130,7 +114,7 @@ class ProbAttention(nn.Module):
         
         return context.transpose(2,1).contiguous(), attn
 
-# %%
+
 class AttentionLayer(nn.Module):
     def __init__(self, attention, d_model, n_heads, 
                  d_keys=None, d_values=None, mix=False):
@@ -169,20 +153,47 @@ class AttentionLayer(nn.Module):
         return self.out_projection(out), attn
 
 # %%
-class SparseAttentionModule_Prob(nn.Module):
+class DetSparseAttentionModule(nn.Module):
     def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1):
-        super(SparseAttentionModule_Prob, self).__init__()
-        self.sampler = ProbabilisticEmbeddingSampler(d_model)
+        super(DetSparseAttentionModule, self).__init__()
         self.attention_layer = AttentionLayer(
             ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
             d_model=d_model, n_heads=n_heads
         )
-    
+
     def forward(self, embeddings):
-        # Sample embeddings from a Gaussian distribution centered around the input embeddings
-        sampled_embeddings = self.sampler(embeddings)
-        
-        # Use sampled embeddings for attention calculation
-        attention_output, _ = self.attention_layer(sampled_embeddings, sampled_embeddings, sampled_embeddings, None)
+        # only use mean
+        means = embeddings[0]
+
+        # Use means for attention calculation
+        attention_output, _ = self.attention_layer(means, means, means, None)
 
         return attention_output
+
+# %%
+class ProbSparseAttentionModule(nn.Module):
+    def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1):
+        super(ProbSparseAttentionModule, self).__init__()
+        # Attention layers for both means and variances
+        self.attention_layer_means = AttentionLayer(
+            ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
+            d_model=d_model, n_heads=n_heads
+        )
+        self.attention_layer_vars = AttentionLayer(
+            ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
+            d_model=d_model, n_heads=n_heads
+        )
+
+    def forward(self, embeddings):
+        # Split embeddings into mean and variance
+        means = embeddings[0]
+        variances = embeddings[1]
+
+        # Process means and variances separately through attention layers
+        attention_output_means, _ = self.attention_layer_means(means, means, means, None)
+        attention_output_vars, _ = self.attention_layer_vars(variances, variances, variances, None)
+
+        # Combine the results
+        combined_output = torch.stack([attention_output_means, attention_output_vars], dim=0)
+
+        return combined_output

@@ -1,7 +1,4 @@
-# %% [markdown]
-# # Libraries
-
-# %%
+# Libraries
 import math
 
 # machine learning
@@ -9,10 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# %% [markdown]
-# # Probabilistic Embeddings
+# Probabilistic Embeddings
 
-# %%
 def t2v(
     tau, # input tensor
     f, # activation function (sin or cosin)
@@ -73,7 +68,7 @@ class ProbabilisticCosineActivation(nn.Module):
         
         return torch.cat([mean, variance], -1)
 
-# %%
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000):
         super(PositionalEncoding, self).__init__()
@@ -93,7 +88,7 @@ class PositionalEncoding(nn.Module):
         
         return pos_encoding
 
-# %%
+
 class Encoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(Encoding, self).__init__()
@@ -114,7 +109,7 @@ class Encoding(nn.Module):
         
         return embedding_mean + pos_encodings[:seq_len, :]
 
-# %%
+
 class ProbEncoding(nn.Module):
     def __init__(self, in_features, out_features, max_len=5000):
         super(ProbEncoding, self).__init__()
