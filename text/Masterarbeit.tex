@@ -32,9 +32,11 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{siunitx} % Required for alignment
+\usepackage{mathtools}
 
 
 \DeclareMathOperator{\Lagr}{\mathcal{L}}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \usepackage[ 
 	backend=bibtex8,     
@@ -326,13 +328,8 @@ Another interesting aspect that this paper utilises is the use of \textit{Probab
 
 \subsection{eFormer}
 
-\begin{itemize}
-    \item deterministic -> uncertainty at end, but not really probabilistic. Based on papers
-    \item uncertainty from begin carried through and also learned
-\end{itemize}
-
 The eFormer is going to be the core of this analysis, it targets to be a domain specific probabilistic transformer model that outperforms more general models like the previously introduced Informer and Autoformer models. Even though the main performance measurement is going to be the accuracy of the forecast, another relevant metric to evaluate this model is the training time and resource consumption. Since this model is aimed to be as lightweight as possible. This should be achieved by dropping the entire decoder part and only use a minimal amount of layers and fewer heads than comparable models. While not writing new layers or parts, this paper uses already published parts from papers and searches for the optimal composition and combination to achieve the set goals. \par
-The model architecture consists of the time2vec embeddings created by \cite{time2vec}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer} that resides in a different head to the previous attention mechanism. The two attention modules are not used in a row after one another, but separately. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too often, leaving fewer elements in the weight than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant, while the deterministic variants have a probabilistic layer as second last layer. In a later attempt the goal is to combine the best working models from both attention mechanisms into one coherent structure, where each odd weight update is mechanism A and each even weight update is mechanism B. \par
+The model architecture consists of the time2vec embeddings created by \cite{time2vec} with the positional encoding introduced by \cite{vanilla-transformer}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer}. The two attention modules are not used in a row after one another, but parallel where each odd and even backpropagation loop runs on a different attention class. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too fast, leaving fewer non-zero elements in the weights than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant. The probabilistic model introduces uncertainty in the very beginning and carries the respective Gaussian distributions based on the mean and the variance trough all the way, thus being computationally more expensive but with the potential of keeping more information since the variance is trained independently from the mean in case they are not correlated. The other case, what is referred to as deterministic model, only learns the mean of the distributions and the variance is only inferred after the training is completed in a separate probabilistic layer where the uncertainty is introduced to give a hint on how accurate the estimates are. Though this is a computationally cheaper option is does not provide the same degree of information regarding the uncertainty of the predictions, hence this is a less desirable variant. \par 
 In the case that the encoder only structure is not providing good results. The vanilla decoder from the "Attention is all you need" Paper is tweaked to work with my edited encoder.
 
 \subsubsection{Embeddings \& Positional Encodings}
@@ -368,19 +365,20 @@ To give each value in the time series a unique identifying value, these values h
     PE(pos, 2i) &= sin \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right) \\
     PE(pos, 2i + 1) &= cos \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right)
 \end{align}
+This method was first proposed by \cite{vanilla-transformer} with the intention to make relative positions easier to understand for the model due to the again periodic nature of the sine and cosine functions used.
 
 With the creation of the embeddings and the positional encoding, the two tensors are then added up to achieve the desired result.
 \begin{equation}
     Encoded(\tau) = t2v(\tau) + PE(pos,i)
 \end{equation}
-This addition is also repeated for the variance in the probabilistic case. To make it easier in future steps to access the data independently they are stored in the same tensor but in two different dimensions. 
+This addition is also repeated for the variance in the probabilistic case. To make it easier in future steps to access the data independently they are stored in the same tensor but in two different dimensions.
+At first it seems counter intuitive that the model can infer the positions from the embeddings when the encoding vectors have been added up with embedding vectors. However the way the attention modules handle the altered input sequences, the model can connect data points based on their temporal relative positioning, based on the additional information provided by the positional encodings.
 
 \subsubsection{Sparse Attention}
 
 \begin{itemize}
     \item probabilistic
     \item encoder only, "decoder" only with empty time embeddings for forecasting
-    \item 
 \end{itemize}
 
 This part replaces the vanilla attention mechanism and focuses on dropping sections from the time series that it deems not relevant enough to keep tracking. The decision about which parts are worthwhile to chase and which parts are not are determined by the model using a threshold which is set by the variables \textit{attention\_dropout} and \textit{prob\_sparse\_factor}.
@@ -394,7 +392,7 @@ This part replaces the vanilla attention mechanism and focuses on dropping secti
 
 There is no masking in place since it is not necessary to withhold information from the decoder as none exists in its intended form. The only part that is in the decoders place is an empty vector with the time horizons that are being forecasted. These timestamps are being converted using the same positional encoding as in the embeddings part. Therefor all that is going to happen in the 'decoder' part is the continuation of predicting values for unseen timestamps.
 
-There exist two versions of the same eFormer with sparse attention, in one case the variance is calculated already in the attention mechanism and from there kept and updated alongside the mean, while the second case only calculates with the mean until the very end where the variance is calculated just after the softmax layer and before the forecast output is produced. The idea is to investigate whether there are benefits to keep track of the variance for the majority of the time and risk the higher computational costs which are expected due to twice the storage and calculation of an additional matrix. It is expected that the approach with the variance calculation early on yields higher accuracy, due to the set of additional trainable variables. And that the variance is more nuanced in some areas which in return can be also interpreted further and result in more information gained. It can for example be advantageous to know for during which time the variance is smaller or larger to imply policy predictions from that knowledge. 
+The arcitecture of the transformers utilising the sparse attention mechanism is shown in figure \ref{fig:eFormer_sparse} where both model variants are displayed. The inner workings of both models are the same for the sparse attention, the only difference lies in the application of the attention to both the mean and the variance while the other model only applies to the mean.
 
 \begin{figure}[!ht]
     \hspace*{\fill}
@@ -411,6 +409,46 @@ There exist two versions of the same eFormer with sparse attention, in one case 
     \caption{eFormer Sparse Attention}
     \label{fig:eFormer_sparse}
 \end{figure}
+
+The key to reduce the computational costs is to build subsets of the key vectors $K$ by sampling for every query vector $Q$. These two vector have the dimensions $[B,H,L_K,D]$ and $[B,H,L_Q,E]$ respectively, with
+\begin{itemize}
+    \item $B$ as the batch size,
+    \item $H$ as the number of multi-attention-heads,
+    \item $L_K$ and $L_Q$ as the lengths of the query and key sequences respectively,
+    \item $D$ and $E$ as the dimensions of the query and key vectors respectively.
+\end{itemize}
+This is achieved in the \textit{ProbAttention} class, where at first $U_{part}$ elements are being sampled with
+\begin{equation}
+    U_{part} = c \ceil*{log(L_K)}
+\end{equation}
+where $c$ is a hyperparameter, $L_K$ is the length of the key vector that is being sampled and $\ceil*{\cdot}$ is a ceiling function to ensure that $c$ is multiplied with integers as the value for $U_{part}$ can not be fractional. The logarithmic scaling is in place to prevent linear scaling with increased input size, since not every additional element is proportionally as important for the sampling to be effective. After sampling from the original $K$ using the function \textit{torch.randint} the tensor $K_{sample}$ of length $U_{part}$ the dot product is build
+\begin{equation}
+    QK^{T}_{sample} = Q \cdot K_{sample}
+\end{equation}
+with the usage of the sampled vector the first step towards reducing the computational load is achieved. This dotproduct is then used in the sparsity measurement to determine which queries have the highest potential impact on the output. This is calculated by
+\begin{equation}
+    M = max\left(QK^{T}_{sample}\right) - \frac{\sum QK^{T}_{sample}}{L_K}
+\end{equation}
+of this sparsity measurement the top $n$ values are selected, the number of $n$ is calculated similarly to the $K_{sample}$ using
+\begin{equation}
+    u = c \ceil*{log(L_Q)}
+\end{equation}
+where $c$ is the same hyperparameter as before and $L_Q$ is the length of the query vector, the same logic of utilising a logarithm is applied here too. The final step is to calculate the reduced dot product which consists of the selected queries and the full key length
+\begin{equation}
+    Q_{selected}K^{T} = Q_{selected} \cdot K
+\end{equation}
+resulting in the the desired lowered computation of $O(T log(T))$ as claimed by \cite{Informer}. \par 
+
+The next step in calculating the attention is to initialize and calculate the attention scores which is performed in the same class as the calculation of the reduced dotproduct. The initial context vectors are the averages over the value tensor $V$ with dimensions $[B,H,L_V,D]$. This can be done since as mentioned previously the masking is not important in this model as the decoder is practically non-existent and thus no future tokens have to be hidden, with the intention to reduce the computational costs further. After the initialised context vectors, they have to be updated. To do so the first step is use the softmax function on the previously calculated dotproduct to convert them into probabilities
+\begin{equation}
+    a_{ijk} = \frac{e^{a_{ijk}}}{\sum^{L_K}_{k=1}e^{a_{ijk}}}
+\end{equation}
+where $a_{ijk}$ represents the normalized attention weight for the $k$-th key vector when attending to the $j$-th query in the $i$-th batch for a specific head. The updated context vector is then processed for each selected query index by aggregating information across the value sequence, weighted by the relevance of each value vector as determined by the attention scores.
+\begin{equation}
+    context_{in}[:,:,index,:] = \sum^{L_K}_{k=1} a_{ijk} \cdot V_{:,:,k,:}
+\end{equation}
+where the normalized attention scores $a_{ijk}$ are used as weights.
+
 
 \subsubsection{Auto Correlation Attention}
 
