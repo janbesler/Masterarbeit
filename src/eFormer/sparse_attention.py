@@ -117,7 +117,7 @@ class ProbAttention(nn.Module):
 
 class AttentionLayer(nn.Module):
     def __init__(self, attention, d_model, n_heads, 
-                 d_keys=None, d_values=None, mix=False):
+                 d_keys=None, d_values=None, mix=True):
         super(AttentionLayer, self).__init__()
 
         d_keys = d_keys or (d_model//n_heads)
