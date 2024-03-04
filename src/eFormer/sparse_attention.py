@@ -37,7 +37,7 @@ class ProbAttention(nn.Module):
     def _prob_QK(self, Q, K, sample_k, n_top): # n_top: c*ln(L_q)
         # Q [B, H, L, D]
         B, H, L_K, E = K.shape
-        _, _, L_Q, _ = Q.shape
+        _, _, L_Q, _ = Q.shape1
 
         # calculate the sampled Q_K
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
@@ -161,12 +161,9 @@ class DetSparseAttentionModule(nn.Module):
             d_model=d_model, n_heads=n_heads
         )
 
-    def forward(self, embeddings):
-        # only use mean
-        means = embeddings[0]
-
-        # Use means for attention calculation
-        attention_output, _ = self.attention_layer(means, means, means, None)
+    def forward(self, queries, keys, values, attn_mask=None):
+        # calculate attention
+        attention_output, _ = self.attention_layer(queries, keys, values, attn_mask)
 
         return attention_output
 
@@ -184,16 +181,19 @@ class ProbSparseAttentionModule(nn.Module):
             d_model=d_model, n_heads=n_heads
         )
 
-    def forward(self, embeddings):
-        # Split embeddings into mean and variance
-        means = embeddings[0]
-        variances = embeddings[1]
+    def forward(self, queries, keys, values, attn_mask=None):
+        # Split the input tensors to extract means and variances
+        queries_means, queries_vars = queries[0], queries[1]
+        keys_means, keys_vars = keys[0], keys[1]
+        values_means, values_vars = values[0], values[1]
 
-        # Process means and variances separately through attention layers
-        attention_output_means, _ = self.attention_layer_means(means, means, means, None)
-        attention_output_vars, _ = self.attention_layer_vars(variances, variances, variances, None)
+        # Process means through the attention layer for means
+        attention_output_means, _ = self.attention_layer_means(queries_means, keys_means, values_means, attn_mask)
+        
+        # Process variances through the attention layer for variances
+        attention_output_vars, _ = self.attention_layer_vars(queries_vars, keys_vars, values_vars, attn_mask)
 
-        # Combine the results
+        # Combine the processed means and variances
         combined_output = torch.stack([attention_output_means, attention_output_vars], dim=0)
 
         return combined_output
