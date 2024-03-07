@@ -1,44 +1,34 @@
 # Libraries
 import pandas as pd
 import numpy as np
+import torch
 
 # CRPS (continouos ranked probability score)
+
 def crps(forecast, observations, weights):
     """
     Args:
-    forecast (pd.DataFrame or np.ndarray): Forecasts from the model (ensemble).
-    observations (pd.Series or np.ndarray): Observed values.
-    weights (np.array): Corresponding weights for the CRPS scores, derived from sparse attention.
+    forecast (torch.Tensor): Forecasts from the model (ensemble) with shape [1, seq_len].
+    observations (torch.Tensor): Observed values with shape [seq_len].
+    weights (torch.Tensor): Corresponding weights for the CRPS scores, derived from sparse attention, with shape [1, seq_len, seq_len].
 
     Returns:
     float: Weighted mean of the CRPS for all forecasts.
     """
-    # Convert to NumPy arrays if input is Pandas
-    if isinstance(forecast, pd.DataFrame):
-        forecast = forecast.to_numpy()
-    if isinstance(observations, pd.Series):
-        observations = observations.to_numpy()
+    forecast = forecast.squeeze(0)  # Adjusting forecast shape: [64]
+    weights = weights.mean(dim=-1).squeeze(0)  # Assuming averaging is the method to obtain weights: [64]
     
-    # Sort forecast samples
-    forecast.sort(axis=0)
+    # Sorting the forecasts
+    sorted_forecast, _ = torch.sort(forecast, dim=0)
+    observations = observations.unsqueeze(0)  # [1, 64] for broadcasting
 
-    # Ensure observations are broadcastable over the forecast_samples
-    observations = observations[np.newaxis, :]
+    # Cumulative sum of sorted forecasts
+    cumsum_forecast = torch.cumsum(sorted_forecast, dim=0) / forecast.size(0)
 
-    # Calculate CRPS
-    cumsum_forecast = np.cumsum(forecast, axis=0) / forecast.shape[0]
-    crps = np.mean((cumsum_forecast - (forecast > observations).astype(float)) ** 2, axis=0)
-    
-    # weighted median of CRPS
-    if len(crps) != len(weights):
-        raise ValueError("Length of CRPS series and weights must be equal")
+    # Calculating CRPS
+    indicator = (sorted_forecast > observations).float()
+    differences = (cumsum_forecast - indicator) ** 2
+    weighted_differences = differences * weights  # Apply weights to the differences
+    crps = weighted_differences.mean()  # Taking mean across all weighted differences
 
-    weighted_sum = np.sum(crps * weights)
-    total_weights = np.sum(weights)
-
-    if total_weights == 0:
-        raise ValueError("Total weight cannot be zero")
-
-    weighted_crps = weighted_sum / total_weights
-    
-    return weighted_crps
+    return crps  # Returning as a Tensor for the backward pass

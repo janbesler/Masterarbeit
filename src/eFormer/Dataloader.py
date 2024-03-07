@@ -24,13 +24,21 @@ class TimeSeriesDataProcessor:
         self.test_size = test_size
         self.random_state = random_state
 
+    def padding_data(self, dataframe):
+        remainder = dataframe.shape[0] % self.batch_size
+        if remainder == 0:
+            return dataframe # Already divisible by batch size
+        discard = remainder
+        if isinstance(dataframe, pd.DataFrame):
+            return dataframe[discard:]
+
     def shifted_data(self):
         data = self.dataframe
         forecast = self.forecast
         look_back = self.look_back
         shifts = range(forecast, look_back + forecast)
         variables = data.columns
-        
+
         shifted_columns = []
         for column in variables:
             for i in shifts:
@@ -40,7 +48,7 @@ class TimeSeriesDataProcessor:
         
         data_shifted = pd.concat([data] + shifted_columns, axis=1)
         data_shifted.dropna(inplace=True)
-        
+
         return data_shifted
 
     def prepare_datasets(self):
@@ -48,10 +56,14 @@ class TimeSeriesDataProcessor:
             s_df = self.shifted_data().drop(['Wind speed (m/s)'], axis=1)
         except KeyError:
             s_df = self.shifted_data().copy()
-        
+
         # Splitting dataset
         df_train, df_rem = train_test_split(s_df, train_size=self.train_size, random_state=self.random_state)
         df_eval, df_test = train_test_split(df_rem, test_size=self.test_size, random_state=self.random_state)
+
+        df_train = self.padding_data(df_train)
+        df_eval = self.padding_data(df_eval)
+        df_test = self.padding_data(df_test)
 
         # Wrapping datasets
         self.train_dataset = TimeSeriesDataset(df_train)
