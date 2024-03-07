@@ -18,6 +18,7 @@ def t2v(
     b0, # biases for linear part of time2vec layer
     arg=None # optional arguments
     ):
+    # print(f"tau: {tau.shape} \n w: {w.shape}")
     if arg:
         v1 = f(torch.matmul(tau, w) + b, arg)
     else:
@@ -81,8 +82,8 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        # x is expected to have shape [batch_size, seq_len, features]
-        batch_size, seq_len, _ = x.size()
+        # x is expected to have shape [batch_size, seq_len]
+        seq_len = x.size(-1)
         # Expanding to match the batch size of x
         pos_encoding = self.pe[:, :seq_len]
         

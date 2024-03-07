@@ -53,7 +53,7 @@ class SparseDecoder(nn.Module):
         dummy_input = torch.zeros(self.forecast_horizon, self.d_model).unsqueeze(0)
         pos_encodings = self.pos_encoder(dummy_input)
 
-        # Apply encoder-decoder attention using positional encodings as queries and encoder outputs as keys and values
+        # Apply cross attention using positional encodings as queries and encoder outputs as keys and values
         attn_output = self.cross_attention(pos_encodings, encoder_output, encoder_output, attn_mask)
         attn_output = self.norm1(attn_output + self.dropout(attn_output))
 
@@ -67,7 +67,7 @@ class SparseDecoder(nn.Module):
         # Generate forecasts based on the attention output
         forecasts = self.output_layer(ff_output).squeeze(-1)
         
-        return forecasts
+        return forecasts, ff_output
 
 # %%
 class DetSparseDecoder(nn.Module):
@@ -82,9 +82,9 @@ class DetSparseDecoder(nn.Module):
 
     def forward(self, encoder_output):
         # calculate attention
-        attention_output = self.SparseDecoder(encoder_output)
+        attention_output, crps_weights = self.SparseDecoder(encoder_output)
 
-        return attention_output
+        return attention_output, crps_weights
 
 # %%
 class ProbSparseDecoder(nn.Module):
@@ -109,10 +109,11 @@ class ProbSparseDecoder(nn.Module):
         output_variance = encoder_output[1]
         
         # calculate attention
-        attention_output_mean = self.SparseDecoder_mean(output_mean)
-        attention_output_var = self.SparseDecoder_var(output_variance)
+        attention_output_mean, crps_weights_mean = self.SparseDecoder_mean(output_mean)
+        attention_output_var, crps_weights_var = self.SparseDecoder_var(output_variance)
 
         # Combine the processed means and variances
         combined_output = torch.stack([attention_output_mean, attention_output_var], dim=0)
+        combined_crps_weights = torch.stack([crps_weights_mean, crps_weights_var], dim=0)
 
-        return combined_output
+        return combined_output, combined_crps_weights

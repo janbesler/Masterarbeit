@@ -44,7 +44,10 @@ class TimeSeriesDataProcessor:
         return data_shifted
 
     def prepare_datasets(self):
-        s_df = self.shifted_data().drop(['Wind speed (m/s)'], axis=1)
+        try:
+            s_df = self.shifted_data().drop(['Wind speed (m/s)'], axis=1)
+        except KeyError:
+            s_df = self.shifted_data().copy()
         
         # Splitting dataset
         df_train, df_rem = train_test_split(s_df, train_size=self.train_size, random_state=self.random_state)
