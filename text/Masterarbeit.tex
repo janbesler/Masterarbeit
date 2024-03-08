@@ -376,11 +376,6 @@ At first it seems counter intuitive that the model can infer the positions from 
 
 \subsubsection{Sparse Attention}
 
-\begin{itemize}
-    \item probabilistic
-    \item encoder only, "decoder" only with empty time embeddings for forecasting
-\end{itemize}
-
 This part replaces the vanilla attention mechanism and focuses on dropping sections from the time series that it deems not relevant enough to keep tracking. The decision about which parts are worthwhile to chase and which parts are not are determined by the model using a threshold which is set by the variables \textit{attention\_dropout} and \textit{prob\_sparse\_factor}.
 
 \begin{figure}[!ht]
@@ -439,15 +434,37 @@ where $c$ is the same hyperparameter as before and $L_Q$ is the length of the qu
 \end{equation}
 resulting in the the desired lowered computation of $O(T log(T))$ as claimed by \cite{Informer}. \par 
 
-The next step in calculating the attention is to initialize and calculate the attention scores which is performed in the same class as the calculation of the reduced dotproduct. The initial context vectors are the averages over the value tensor $V$ with dimensions $[B,H,L_V,D]$. This can be done since as mentioned previously the masking is not important in this model as the decoder is practically non-existent and thus no future tokens have to be hidden, with the intention to reduce the computational costs further. After the initialised context vectors, they have to be updated. To do so the first step is use the softmax function on the previously calculated dotproduct to convert them into probabilities
-\begin{equation}
-    a_{ijk} = \frac{e^{a_{ijk}}}{\sum^{L_K}_{k=1}e^{a_{ijk}}}
-\end{equation}
-where $a_{ijk}$ represents the normalized attention weight for the $k$-th key vector when attending to the $j$-th query in the $i$-th batch for a specific head. The updated context vector is then processed for each selected query index by aggregating information across the value sequence, weighted by the relevance of each value vector as determined by the attention scores.
+The next step in calculating the attention is to initialize and calculate the attention scores which is performed in the same class as the calculation of the reduced dotproduct. The initial context vectors are the averages over the value tensor $V$ with dimensions $[B,H,L_V,D]$. This can be done since as mentioned previously the masking is not important in this model as the decoder is practically non-existent and thus no future tokens have to be hidden, with the intention to reduce the computational costs further. After the initialised context vectors, they have to be updated. To do so is to use the softmax function on the previously calculated dotproduct to convert them into probabilities, but before that the attention scores are scaled to prevent to large values in the softmax to improve numerical stability. Hence the next steps are
+\begin{align}
+    a_{ijk} &= a_{ijk} \frac{1}{\sqrt{D}} \\
+    a_{ijk} &= \frac{e^{a_{ijk}}}{\sum^{L_K}_{k=1}e^{a_{ijk}}}
+\end{align}
+where $a_{ijk}$ represents the normalized attention weight for the $k$-th key vector when attending to the $j$-th query in the $i$-th batch for a specific head and $D$ is the dimensionality of the head. The updated context vector is then processed for each selected query index by aggregating information across the value sequence, weighted by the relevance of each value vector as determined by the attention scores.
 \begin{equation}
     context_{in}[:,:,index,:] = \sum^{L_K}_{k=1} a_{ijk} \cdot V_{:,:,k,:}
 \end{equation}
-where the normalized attention scores $a_{ijk}$ are used as weights.
+For the updated context scores the normalized attention scores $a_{ijk}$ are used as weights. \par 
+
+The next class is an Attention Layer that orchestrates all the functions explained before and ensures the correct dimensions for the output tensor and thus builds the core component of the multi-head attention mechanism since this function allows for parallel computing. In detail this class contains 4 steps, where the first one is a linear projection of the query, key and value matrices to bring them to the correct dimensions to ensure computing without problems.
+\begin{align}
+    Q' &= QW^Q \\
+    K' &= KW^K \\
+    V' &= VW^V
+\end{align}
+The weight matrices $W^{Q,K,V}$ come from a linear layer using the weight computations from before. After that the projections are reshaped to make parallel computing across the multi attention heads possible. The second step is the attention computation itself which utilises all the functions described in Detail before. Which results in 
+\begin{equation}\label{eq:Encoder-Attention}
+    Attention(Q', K', V') = softmax \left( \frac{Q'K'^T}{\sqrt{D / H}} \right) V'
+\end{equation}
+Here $Q'K'^T$ calculates the dot-product attention scores, while $\sqrt{D/H}$ is the scaling factor that prevents the scores from growing too large as described before.  In the third step the results from the different are combined and mixed to take full advantage of the multi-attention head mechanism as been shown for NLP tasks by \cite{multi-head-mixing, mulit-head-mixing2}. Doing so allows the model to learns from different aspects from the same data and is able to see more perspectives allowing for a richer and more comprehensive representation of the underlying data. Further this allows for better generalization and faster convergence, since each can specialize more and then synergies their results which in turn increases training stability. The final fourth step is another linear projection to bring the Attention from equation \ref{eq:Encoder-Attention} into the desired shape before proceeding. \par 
+
+This concludes the description of the Encoder Model for the Sparse Attention Model, the Decoder part is as stated previously as minimalistic as possible and only consists of an empty vector of positional encoding for the forecasted values and is then put through the same attention mechanism as the encoder part.
+
+The sparse Decoder Part is a customised version of a minimalist transformer decoder that is specialized into working with timer series data and the sparse attention mechanism from the encoder part. It utilises dropout to prevent overfitting and works with the ReLu activation function, while the input to this part is the output tensor from the encoder part and the newly created prositional encodings for the to be predicted values. The forward pass contains deals with positional encoding, cross-attention, a feed-forward network, layer normalization and output generation. While this seems like a lot is done in these steps, several elements have been left out for example the self-attention on the input data purely in the decoder part and the corresponding masking. The only steps that could be omitted is the feed-forward network with its two convolutional layers, except for that the other parts are mandatory in the generation of the forecasts.\par 
+The first part the positional encoding used to create the vector of forecasted values utilises the same functions as in the encoder part previously described in equation \ref{eq:pos-encoding} and thus creates a continuation in the time encoding that is easier to understand for the computer. The second part the cross-attention layer takes inputs from the decoder as well as the encoder side and thus is able to combine the relevant data. The Queries $Q$ are the positional encodings from the decoder while the keys $K$ and values $V$ are from the encoder side. These tensors are fed into the same structure as presented in the encoder part in \ref{eq:Encoder-Attention} but with altered inputs hence the equation is now
+\begin{equation}\label{eq:Decoder-CrossAttention}
+    Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}) = softmax \left( \frac{Q_{Decoder} K_{Encoder}^T}{\sqrt{D / H}} \right) V_{Encoder}
+\end{equation}
+as before the keys and values are sampled and thus smaller versions of the original keys and values, as previously described in the encoder part, which again makes the calculation less computational expensive. 
 
 
 \subsubsection{Auto Correlation Attention}
