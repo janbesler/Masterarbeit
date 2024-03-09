@@ -332,6 +332,8 @@ The eFormer is going to be the core of this analysis, it targets to be a domain 
 The model architecture consists of the time2vec embeddings created by \cite{time2vec} with the positional encoding introduced by \cite{vanilla-transformer}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer}. The two attention modules are not used in a row after one another, but parallel where each odd and even backpropagation loop runs on a different attention class. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too fast, leaving fewer non-zero elements in the weights than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant. The probabilistic model introduces uncertainty in the very beginning and carries the respective Gaussian distributions based on the mean and the variance trough all the way, thus being computationally more expensive but with the potential of keeping more information since the variance is trained independently from the mean in case they are not correlated. The other case, what is referred to as deterministic model, only learns the mean of the distributions and the variance is only inferred after the training is completed in a separate probabilistic layer where the uncertainty is introduced to give a hint on how accurate the estimates are. Though this is a computationally cheaper option is does not provide the same degree of information regarding the uncertainty of the predictions, hence this is a less desirable variant. \par 
 In the case that the encoder only structure is not providing good results. The vanilla decoder from the "Attention is all you need" Paper is tweaked to work with my edited encoder.
 
+\subsubsection{Dataloader}
+
 \subsubsection{Embeddings \& Positional Encodings}
 
 For the embeddings of time series data \cite{time2vec} introduce in their paper a framework with the core idea to view time as a sine or cosine function, to highlight its periodical nature. They argue that it is hard for the computer to process that after 12 or 24 hours respectively the next step is 1 o'clock, hence the transformation into a mathematical periodic function. For the eFormer these properties are also going to be incorporated, with the addition of positional encoding.
@@ -465,9 +467,28 @@ The first part the positional encoding used to create the vector of forecasted v
     Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}) = softmax \left( \frac{Q_{Decoder} K_{Encoder}^T}{\sqrt{D / H}} \right) V_{Encoder}
 \end{equation}
 as before the keys and values are sampled and thus smaller versions of the original keys and values, as previously described in the encoder part, which again makes the calculation less computational expensive. 
+The third part is a feed-forward network which through its non-linear activation function is able to capture more complex patterns in the observed data. The first convolutional layer performs a element-wise transformation using a kernel of size 1 to transform the dimensionality from the inital dimensions set in the hyperparameters $d_{model}$ to the dimension of the feed forward network's hidden layer) $d_{ff}$
+\begin{align}\label{eq: decoder-ffn}
+    FFN_1 &= ReLu(Conv_{kernelsize = 1}(Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}))) \\
+    FFN_2 &= Conv_{kernelsize = 1}(FFN_1)
+\end{align}
+to be able to keep working with the attention outputs they are transformed back into the dimensions of $d_{model}$ using a second convolutional layer, without a activation function, since that has already been applied before. The choice for the usage of convolutional layers comes down to the benefits they provide over fully connected dense layers in traditional transformer models, which are mainly the efficiency advantages of sharing parameters and their ability to be easily parallelized, as well as the application of filters on smaller regions due to the kernel size of $1$ which provides benefits to capturing short term dependencies.
 
+The fourth step include layer normalization which ensure the model's stability and help to mitigate the vanishing gradient problem. The normalization is applied towards the normal attention output as well as the feed-forward network output
+\begin{align}
+    Attention(Q,K,V) &= LayerNorm(Attention(Q,K,V) + Dropout(Attention(Q,K,V)) \\
+    FFN_3 &= LayerNorm(Attention(Q,K,V) + Dropout(FFN_2))
+\end{align}
+with the dropout of $0.1$, some of the neurons in the layers are deactivated to boost generalization of the model by forcing it to find new paths when previous attempts are blocked.
+In the last step the tensor from $FFN_3$ is processed into the forecasted values by using a linear layer
+\begin{equation}
+    forecast = FFN_3 W + b
+\end{equation}
+with $W, b$ being the weights and biases respectively that are used in the linear layer. After this transformation the forecast is an interpretable value that can be compared to the ground truth and thus the error can be calculated and the back propagation steps can start to update the weights.
 
 \subsubsection{Auto Correlation Attention}
+
+\subsubsection{Loss Function}
 
 \newpage
 
