@@ -81,16 +81,18 @@
 \subsection{To-Do}
 
 \begin{itemize}
-    \item 4000 outlier zu viel -> woran liegt das?
-    \begin{itemize}
-        \item anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
-        \item distribution plotten und tails analysieren
-        \item wind zu output mappen und gucken ob es da zusammenhänge gibt
-    \end{itemize}
-    \item adf mit lags, um trend changes rauszufiltern
-    \item test auf distributions von test und train, nicht notwednnig um generalisierung voranzutreiben
-    \item missing values, einzelzeitschritte interpolieren und längere Zeiträume löschen
-    \item meta learning für feature umschalten
+   \item anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
+   \item Graphen eFormer aktualisieren
+   \item Colab einrichten \& Jobs starten
+   \item Informer und Autoformer auf selbe Daten trainieren
+   \item Auswertung vorbereiten
+   \begin{itemize}
+       \item Tabelle für Ressourcen Effizienz
+       \item Vergleich Modelle zu Ground Truth -> 1 bis 3 Monate
+       \item Comparison of Errors -> Werte mit Softmax angleichen?!
+   \end{itemize}
+   \item Related Work schreiben
+   \item alle Formeln haben gleich Variablen Namen
 \end{itemize}
 
 \subsection{Motivation}
@@ -104,8 +106,6 @@ In the area of electricity generation and consumption, forecasting is a relevant
 
 The deep learning models used, are probabilistic and not deterministic. This is due to the advantages of probabilistic models when working with noisy data and the resulting probability distributions as outcomes instead of deterministic values. With the ability to quantify the uncertainty of forecasts, there is an advantage to modelling in a probabilistic way by understanding the range and probability of possible outcomes. Even if there is no exact value for the outcome, ranges can be given to estimate how big the impact will be.
 However, the disadvantages of working with probabilistic models are the increased complexity due to working with probability distributions as outcomes, making the results less intuitive to interpret. In addition, the increased complexity leads to higher computational costs and thus greater demands on limited resources.
-
-%%%% TEST %%%%
 
 The critical importance of time series forecasting in the advancement of renewable energy systems underscores the need for effective predictive models. The advent of Large Language Models (LLMs) such as ChatGPT in early 2023 has reignited interest in the underlying transformer models, whose sequential data processing capabilities have shown promise beyond the confines of Natural Language Processing (NLP). Despite their success, the adoption of transformer models in domains like time series forecasting, where data is inherently sequential, is not ubiquitous, presenting a research opportunity to investigate their relative efficacy compared to established models such as Long Short Term Memory (LSTM) networks.
 
@@ -129,6 +129,9 @@ To address this multifaceted question, the research will be guided by a series o
 Through this structured inquiry, the thesis will contribute to a nuanced understanding of the applicability and efficacy of transformer models in the field of time series forecasting.
 
 \section{Related Work}
+
+With the rise of the transformer models, in different applications as NLP and Computer Vision, so came the specialisations of these models as shown in \cite{Transformer-Survey}. These ideas of different approaches and goals also reached the time series models, several sub categories emerged as shown by \cite{Transformer-TS-Survey}, but one area of special interest for this paper is time series forecasting, where \cite{forecasting-overview} gives an overview of forecasting methods in the area of electricity production and consumption. A more specific overview of deep learning models in time series forecasting is done by \cite{Transformer-TS-PV}, even though it focuses on predicting data in the area of photovoltaic, the overview and explanations for energy related data is useful in this paper too and gives an overview for the models that are suitable. \par 
+In the area of probabilistic forecasting the work by \cite{Prob-Forecast-Overview} shows the increasing interest in prediction intervals and densities, especially after the GEFCOM14 competition numerous papers on the issue of probabilistic forecasting have been published. After this surge, a few papers of interest for this paper have been published, these include the Informer model, utilising sparse attention mechanism by \cite{Informer}, the autoformer which emphasizes auto regression, written by \cite{autoformer}. The time2vec paper by \cite{time2vec} investigates how embeddings and positional encodings can differ for time series forecasting due to their periodic time features.
 
 \section{Data}
 
@@ -236,6 +239,7 @@ Though an important question remains, how to assess the goodness of the models i
 The aim for the newly developed model is generalization with complex and less complex data, therefor it is not planned to include layers for extra steps found in other models such as seasonal decomposition or trend analysis.
 
 \subsection{Model Evaluation}
+\subsubsection{Error Metrics}
 
 To determine whether a Model is successful in their task, standardised methods of comparison are needed. These already exist for the accuracy, as the metric to determine the goodness of a model is measured in how small the error of a model is. These errors can be measured in different ways, with the most prominent ones in regression analysis being:
 
@@ -268,9 +272,6 @@ Root Mean Squared Error (RMSE) is the square root of MSE and is defined as:
 
 RMSE has the same units as the dependent variable and is particularly useful when large errors are undesirable \cite{MAE_RMSE}.\par 
 
-Utilizing each of these error metrics a wider range of potential problems and areas of interest (like the penalising of outliers) can be covered. But what is scarcely being looked upon are other metrics of evaluating models besides the accuracy, this includes resource efficiency and computational requirements linked to that the time to train and an intuitive interpretation of the results. In this thesis, these measurements are playing a bigger role in evaluating models besides the accuracy. Especially resource efficiency is playing a bigger role as shown by \cite{AI_energy_consumption} and \cite{resource_awareness}. One of the problems lies in size and complexity of machine learning models which alongside the volume of data required for the training have been experiencing exponential growth, thereby demanding more computational resources. This trend has outpaced the advancements in computing hardware platforms, storage infrastructure, and networking capabilities, leading to sustainability challenges. Some papers such as \cite{Informer} have implemented some aspects to reduce the computational efficiency, but their idea was more about training time than resource efficiency. \par 
-The problem with evaluating the resource efficiency, is the lack of a proper framework and standardised measurements. It is not in the scope if this thesis to develop such frameworks, but to map the resources used to train different models on the same data and further the time spend during the whole development process on training, testing and performing inference on cloud computers is mapped, evaluated and critically viewed for improvements and saving opportunities.
-
 The previously introduced error metrics are not developed to handle probabilistic forecasts, unlike the Continuous Ranked Probability Score (CRPS) developed by \cite{Loss_Function} which is perfectly suited for probabilistic forecasts. This metric is especially suited for the evaluation since for a deterministic forecast, the metric becomes the MAE. Thus deterministic and probabilistic models can be evaluated using the same metric. Further this metric can also be used as a loss function, for the transformer models as a replacement for the usual cross entropy loss, since it has been used for probabilistic weather forecasts in several papers as \cite{CRPS_example_1, CRPS_example_2, CRPS_example_3} show. \par 
 It is defined as:
 \begin{equation}
@@ -283,6 +284,11 @@ where $F$ is a cumulative distribution function of $X$, for example $F(y) = \mat
         0, & \text{otherwise}
     \end{cases}
 \end{equation}
+
+\subsubsection{Ressource Efficiency}
+
+Utilizing each of these error metrics a wider range of potential problems and areas of interest (like the penalising of outliers) can be covered. But what is scarcely being looked upon are other metrics of evaluating models besides the accuracy, this includes resource efficiency and computational requirements linked to that the time to train and an intuitive interpretation of the results. In this thesis, these measurements are playing a bigger role in evaluating models besides the accuracy. Especially resource efficiency is playing a bigger role as shown by \cite{AI_energy_consumption} and \cite{resource_awareness}. One of the problems lies in size and complexity of machine learning models which alongside the volume of data required for the training have been experiencing exponential growth, thereby demanding more computational resources. This trend has outpaced the advancements in computing hardware platforms, storage infrastructure, and networking capabilities, leading to sustainability challenges. Some papers such as \cite{Informer} have implemented some aspects to reduce the computational efficiency, but their idea was more about training time than resource efficiency. \par 
+The problem with evaluating the resource efficiency, is the lack of a proper framework and standardised measurements. It is not in the scope if this thesis to develop such frameworks, but to map the resources used to train different models on the same data and further the time spend during the whole development process on training, testing and performing inference on cloud computers is mapped, evaluated and critically viewed for improvements and saving opportunities. In order to achieve this goal, a function is running during the training, testing and evaluation process to map the CPU, RAM and GPU usage as well as the time it takes to train the model. These values are measured every 5 seconds, although this takes away resources from the models itself, the function is applied to all models and therefore the reduced capacity cancels out. In the end the values of interest are the average and peak usage to determine which models use are most cost efficient in terms of computational power used.
 
 \subsection{Linear Models}
 
@@ -301,6 +307,7 @@ Since the DeepLearning Models are in the centre of the research a thorough valua
 \subsubsection{Vanilla Transformer}
 
 The vanilla transformer represents a version that is close to the original model presented by \cite{vanilla-transformer} that utilises the attention mechanism and is not optimised in any way to a time series forecasting role, hence it has no additional layers to perform seasonal decomposition or other methods.
+The vanilla transformer has a standard encoder-decoder structure and uses fully connected layers, hence it is expected to use the most resources as no alterations have been undertaken to lower the complexity of its calculations. 
 
 \subsubsection{Informer}
 
@@ -313,13 +320,13 @@ where $T$ is the length of the time series and $D$ is the dimension of the hidde
     O(T \cdot log{T}) .
 \end{equation*}
 The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered
-
+\begin{quote}
     Quadratic computation of canonical self-attention:
     The vanilla Transformer has a computational complexity of  where TT is the time series length and DD is the dimension of the hidden states. For long sequence time-series forecasting (also known as the LSTF problem), this might be really computationally expensive. To solve this problem, Informer employs a new self-attention mechanism called ProbSparse attention, which has time and space complexity.
     
     Memory bottleneck when stacking layers:
     When stacking NN encoder/decoder layers, the vanilla Transformer has a memory usage of , which limits the model's capacity for long sequences. Informer uses a Distilling operation, for reducing the input size between layers into its half slice. By doing so, it reduces the whole memory usage to be.
-
+\end{quote}
 Another interesting aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
 
 \subsubsection{Autoformer}
@@ -329,10 +336,13 @@ Another interesting aspect that this paper utilises is the use of \textit{Probab
 \subsection{eFormer}
 
 The eFormer is going to be the core of this analysis, it targets to be a domain specific probabilistic transformer model that outperforms more general models like the previously introduced Informer and Autoformer models. Even though the main performance measurement is going to be the accuracy of the forecast, another relevant metric to evaluate this model is the training time and resource consumption. Since this model is aimed to be as lightweight as possible. This should be achieved by dropping the entire decoder part and only use a minimal amount of layers and fewer heads than comparable models. While not writing new layers or parts, this paper uses already published parts from papers and searches for the optimal composition and combination to achieve the set goals. \par
-The model architecture consists of the time2vec embeddings created by \cite{time2vec} with the positional encoding introduced by \cite{vanilla-transformer}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer}. The two attention modules are not used in a row after one another, but parallel where each odd and even backpropagation loop runs on a different attention class. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too fast, leaving fewer non-zero elements in the weights than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant. The probabilistic model introduces uncertainty in the very beginning and carries the respective Gaussian distributions based on the mean and the variance trough all the way, thus being computationally more expensive but with the potential of keeping more information since the variance is trained independently from the mean in case they are not correlated. The other case, what is referred to as deterministic model, only learns the mean of the distributions and the variance is only inferred after the training is completed in a separate probabilistic layer where the uncertainty is introduced to give a hint on how accurate the estimates are. Though this is a computationally cheaper option is does not provide the same degree of information regarding the uncertainty of the predictions, hence this is a less desirable variant. \par 
-In the case that the encoder only structure is not providing good results. The vanilla decoder from the "Attention is all you need" Paper is tweaked to work with my edited encoder.
+The model architecture consists of the time2vec embeddings created by \cite{time2vec} with the positional encoding introduced by \cite{vanilla-transformer}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer}. The two attention modules are not used in a row after one another, but parallel where each odd and even back propagation loop runs on a different attention class. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too fast, leaving fewer non-zero elements in the weights than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant. The probabilistic model introduces uncertainty in the very beginning and carries the respective Gaussian distributions based on the mean and the variance trough all the way, thus being computationally more expensive but with the potential of keeping more information since the variance is trained independently from the mean in case they are not correlated. The other case, what is referred to as deterministic model, only learns the mean of the distributions and the variance is only inferred after the training is completed in a separate probabilistic layer where the uncertainty is introduced to give a hint on how accurate the estimates are. Though this is a computationally cheaper option is does not provide the same degree of information regarding the uncertainty of the predictions, hence this is a less desirable variant. \par 
+The model utilises the early stopping technique to have the potential of saving resources and avoid unnecessary training time if the loss does not change significantly anymore. 
 
-\subsubsection{Dataloader}
+\subsubsection{Data Loader}
+
+The data loader is used to prepare the input data sets by ensuring they have the right dimensions and to prepare the batches which are later fed into the transformer model. Thus it enables parallelization and also the last steps of data engineering. At first the data is shifted $n$ time stamps which are determined in the hyperparameters by the variable \textit{look\_back} resulting in a data frame of shape $(\text{dependent variable}(look\_back + 1) + \text{independent variable}(look\_back), \text{time stamps})$, hence each row in this new data frame acts as one observation where the first value is the ground truth and the other values are lagged values of the dependent and independent variables. The dependent variables for the same time stamp as the true value have been omitted, since would enable the model to work with data from the future. After shifting the data, the data frame is split into a train, test and evaluation data set, this process includes shuffling since each row is its own time series with little connections to the other time series. If the data is split without shuffling a more coherent structure would be achieved in the separate data sets, but this is not aimed for due to long lasting trends or seasonal effects which may not be captured in its entirety in all 3 data sets, but may be over representative in only one or two data sets. One example would be the changed electricity consumption profiles during the COVID-19 pandemic, as shown in \cite{COVID_electric_consumption}.\par 
+The three data sets are then reshaped to fit with the batch size to avoid compatibility issues. Therefore the oldest $n$ time series are deleted that do not fit in the batch size, even though some time series that contain relevant information are omitted. In the context of several years of data and on average $300'000$ rows per data frame, the number of dropped time series does not seem to be significant. After converting each of the three data sets into two tensors, one with the labels and one with the features, these tensors are processed using the \textit{torch.DataLoader} function, where the data set for the training process is shuffled to add some more randomness, while the other two data sets for evaluation and testing remain unchanged. 
 
 \subsubsection{Embeddings \& Positional Encodings}
 
@@ -489,6 +499,23 @@ with $W, b$ being the weights and biases respectively that are used in the linea
 \subsubsection{Auto Correlation Attention}
 
 \subsubsection{Loss Function}
+
+As mentioned in the description for the eFormer, a custom Loss function is implemented. The idea is to use a function that works especially well with probabilistic models but can also handle deterministic ones. The choice fell on CRPS which stands for continuous ranked probability score, since it is a more specialised version of the MAE. For deterministic models the CRPS calculates the MAE and thus deterministic and probabilistic models can be compared. In the version that is used here, it is further customised by including the weights after claculating the differences between the predicted and true values, hence some value pairs are having a greater impact on the calculation of the overall score compared to the vanilla CRPS where each value pair has the same significance on the overall loss score. The individual steps to calculate the loss are the following: at first all inputs are reshaped into the same dimensions. This affects the predictions where a singleton dimension is removed and the weights where again a singleton dimension is removed and the average over the last dimension is calculated to have all inputs as a vector of the same length as the sequence length set in the hyperparameters. The CRPS uses a cumulative distribution function (CDF), but to use this function the values in the forecast vector have to be sorted first, after that the cumulative sum of sorted forecasts can be calculated
+\begin{equation}
+    CDF = \frac{1}{N} \sum^N_{i = 1} \mathcal{I}(f_i < f)
+\end{equation}
+with $f_i$ being the forecasted values, $N$ the total number forecasts and $\mathcal{I}$ being an indicator function approxamated by the cumulative sum over the forecasts. The indicator function $\mathcal{I}$ compares the forecasted values with the true values
+\begin{equation}
+    \mathcal{I} (f,t) = \begin{cases}
+        1, & f > t \\
+        0, & \text{otherwise}
+    \end{cases}
+\end{equation}
+hence the final equation for the CRPS calculation is
+\begin{equation}
+    CRPS = \frac{1}{N} \sum^N_{i = 1} w_i (CDF_{forecast_i} - \mathcal{I}(f_i,t))^2
+\end{equation}
+where $w_i$ is the weight matrix from the decoder part that enables the weighted mean, the final score is therefor the weighted mean of all forecasts. The differences towards the theoretical part covered earlier lies in the indicator function where the comparison is towards the true values rather than $0$ and the usage of weights in the final calculation to put more significance on value pairs with higher weights associated.
 
 \newpage
 
