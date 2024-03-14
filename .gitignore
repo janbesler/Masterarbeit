@@ -2,5 +2,8 @@
 Registration_*.pdf
 *.csv
 *.zip
-/src/Time-Series-Library
 *.pyc
+/src/Benchmarks/*
+!/src/Benchmarks/models
+!/src/Benchmarks/layers
+!/src/Benchmarks/utils
