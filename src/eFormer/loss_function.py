@@ -33,7 +33,7 @@ class CRPS(nn.Module):
         cumsum_forecast = torch.cumsum(sorted_forecast, dim=0) / forecast.size(0)
 
         # Calculating CRPS
-        indicator = (sorted_forecast > observations).float()
+        indicator = (sorted_forecast > 0).float()
         differences = (cumsum_forecast - indicator) ** 2
         weighted_differences = differences * weights  # Apply weights to the differences
         crps = weighted_differences.mean()  # Taking mean across all weighted differences

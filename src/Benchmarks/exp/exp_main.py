@@ -8,6 +8,7 @@ from Benchmarks.exp.exp_basic import Exp_Basic
 from Benchmarks.models import Informer, Autoformer, Transformer
 from Benchmarks.utils.tools import EarlyStopping, adjust_learning_rate, visual
 from Benchmarks.utils.metrics import metric
+from eFormer.loss_function import CRPS
 
 import numpy as np
 import torch
@@ -48,7 +49,7 @@ class Exp_Main(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
+        criterion = CRPS()
         return criterion
 
     def _predict(self, batch_x, batch_y, batch_x_mark, batch_y_mark):
