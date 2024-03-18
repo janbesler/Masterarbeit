@@ -83,9 +83,9 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         # x is expected to have shape [batch_size, seq_len]
-        seq_len = x.size(-1)
+        batch_size, seq_len = x.size()
         # Expanding to match the batch size of x
-        pos_encoding = self.pe[:, :seq_len]
+        pos_encoding = self.pe[:, :batch_size]
         
         return pos_encoding
 
@@ -108,8 +108,6 @@ class Encoding(nn.Module):
         seq_len = tau.size(1)
         batch_size = embedding_mean.shape[0]
         pos_encodings = self.positional_encoding(embedding_mean).to(tau.device)
-
-        # Adjust 'pos_encoding' to match 'embeddings' batch size dynamically
 
         return embedding_mean + pos_encodings[:seq_len, :]
 

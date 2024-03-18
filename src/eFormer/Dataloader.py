@@ -58,8 +58,8 @@ class TimeSeriesDataProcessor:
             s_df = self.shifted_data().copy()
 
         # Splitting dataset
-        df_train, df_rem = train_test_split(s_df, train_size=self.train_size, random_state=self.random_state)
-        df_eval, df_test = train_test_split(df_rem, test_size=self.test_size, random_state=self.random_state)
+        df_train, df_rem = train_test_split(s_df, train_size=self.train_size, random_state=False)
+        df_eval, df_test = train_test_split(df_rem, test_size=self.test_size, random_state=False)
 
         df_train = self.padding_data(df_train)
         df_eval = self.padding_data(df_eval)

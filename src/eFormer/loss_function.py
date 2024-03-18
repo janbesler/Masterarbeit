@@ -6,8 +6,38 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # CRPS (continouos ranked probability score)
-
 class CRPS(nn.Module):
+    def __init__(self, custom_parameters=None):
+        super(CRPS, self).__init__()
+        self.custom_parameters = custom_parameters
+
+    def forward(self, forecast, observations):
+        """
+        Args:
+        forecast (torch.Tensor): Forecasts from the model (ensemble) with shape [1, seq_len].
+        observations (torch.Tensor): Observed values with shape [seq_len].
+
+        Returns:
+        float: Mean of the CRPS for all forecasts.
+        """
+        forecast = forecast.squeeze(0)  # Adjusting forecast shape: [64]
+    
+        # Sorting the forecasts
+        sorted_forecast, _ = torch.sort(forecast, dim=0)
+        observations = observations.unsqueeze(0)  # [1, 64] for broadcasting
+
+        # Cumulative sum of sorted forecasts
+        cumsum_forecast = torch.cumsum(sorted_forecast, dim=0) / forecast.size(0)
+
+        # Calculating CRPS
+        indicator = (sorted_forecast > 0).float()
+        differences = (cumsum_forecast - indicator) ** 2
+        crps = differences.mean()
+
+        return crps  # Returning as a Tensor for the backward pass
+
+
+class weighted_CRPS(nn.Module):
     def __init__(self, custom_parameters=None):
         super(CRPS, self).__init__()
         self.custom_parameters = custom_parameters
