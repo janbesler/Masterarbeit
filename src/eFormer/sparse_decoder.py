@@ -50,7 +50,7 @@ class SparseDecoder(nn.Module):
 
     def forward(self, encoder_output, attn_mask=None):
         # Generate positional encodings
-        dummy_input = torch.zeros(self.forecast_horizon, self.d_model).unsqueeze(0)
+        dummy_input = torch.zeros(self.forecast_horizon, self.d_model)#.unsqueeze(0)
         pos_encodings = self.pos_encoder(dummy_input)
 
         # Apply cross attention using positional encodings as queries and encoder outputs as keys and values

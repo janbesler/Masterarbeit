@@ -1,6 +1,6 @@
 /text/Paper/*.pdf
 Registration_*.pdf
-*.csv
+/data/*
 *.zip
 *.pyc
 /src/Benchmarks/*
@@ -9,3 +9,4 @@ Registration_*.pdf
 !/src/Benchmarks/utils
 !/src/Benchmarks/data_provider
 !/src/Benchmarks/exp
+!/data/Results
