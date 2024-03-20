@@ -33,7 +33,30 @@
 \usepackage{amsmath}
 \usepackage{siunitx} % Required for alignment
 \usepackage{mathtools}
+\usepackage{listings}
+\usepackage{color}
 
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  captionpos=b,
+  tabsize=4
+}
 
 \DeclareMathOperator{\Lagr}{\mathcal{L}}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
@@ -73,6 +96,8 @@
 \maketitle
 
 \tableofcontents
+
+\lstlistoflistings
 
 \newpage
 
@@ -294,7 +319,21 @@ The problem with evaluating the resource efficiency, is the lack of a proper fra
 
 The linear model used in this thesis is nothing new, but is regarded as a benchmark towards the other models. To compare the more complex models to a very simple model, with the expectation that the more complex models outperform the simpler models. If that is not going to be the case or they achieve similar results, than the models are regarded as failures and are being discarded. \par 
 
-The linear model is based on the same starting conditions as the other models, the same lags, the same variables in a multivariate context and the same data for the train, validation and test sections. What is not being included is a layer for seasonal decomposition as well as trend cycles, since the aim is to develop models can perform reasonable well without these to increase their generalization performance. 
+The linear model is based on the same starting conditions as the other models, the same lags, the same variables in a multivariate context and the same data for the train, validation and test sections. What is not being included is a layer for seasonal decomposition as well as trend cycles, since the aim is to develop models can perform reasonable well without these to increase their generalization performance. This linear Model is a Single-Layer-Perceptron as \cite{transformers-effectiveness} have used as well in their work. This holds the advantage of producing weights which can be used in the weighted mean CRPS loss function, which is used as part of the different runs as well.
+\begin{lstlisting}[language=Python, caption=Single-Layer-Perceptron]
+class LinearModel(nn.Module):
+    def __init__(self, input_size, output_size):
+        super(LinearModel, self).__init__()
+        self.linear = nn.Linear(input_size, output_size)
+
+    def forward(self, x):
+        x = self.linear(x)
+        weights = self.linear.weight.data
+        
+        return x, weights
+\end{lstlisting}\label{code:LinearModel}
+The model consists of a single linear layer to keep this as simple as possible and achieving similar results to a linear ordinary least square regression. This model is expected to train the fastest and the least amount of resources compared to the deep learning models. Since the model works with the same batches from the data loader as the other models, the training process can be parallelised which helps with the speed of the training process. 
+
 
 \subsection{Machine Learning Models}
 
@@ -516,6 +555,93 @@ hence the final equation for the CRPS calculation is
     CRPS = \frac{1}{N} \sum^N_{i = 1} w_i (CDF_{forecast_i} - \mathcal{I}(f_i,t))^2
 \end{equation}
 where $w_i$ is the weight matrix from the decoder part that enables the weighted mean, the final score is therefor the weighted mean of all forecasts. The differences towards the theoretical part covered earlier lies in the indicator function where the comparison is towards the true values rather than $0$ and the usage of weights in the final calculation to put more significance on value pairs with higher weights associated.
+
+\subsection{Experiment Setup}
+
+The same models are trained on different parameters, as stated in the beginning the overarching goal is to forecast for different forecast horizons. For the longer forecast horizons the look back window has to be larger to give the chance of capturing more context in the larger pool of data. To check if these larger windows have a general benefit on forecasting the shorter forecast horizons are also tested on the larger look back windows. Therefor the following setups shown in \ref{tab:forecast-lookback} can be derived for each model with different sizes for the embedding vectors. 
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{c|c|c|c|c|c}
+      \toprule % <-- Toprule here
+       & \multicolumn{5}{c}{\textbf{Look Back Window}} \\
+      \textbf{Forecast} & 6h & 12h & 24h & 48h & 72h \\
+      \midrule % <-- Midrule here
+      10 min & x & x & x & x & x \\
+      1h &  & x & x & x & x \\
+      6h &  &  & x & x & x \\
+      12h &  &  &  & x & x \\
+      24h &  &  &  &  & x \\
+      \bottomrule % <-- Bottomrule here
+    \end{tabular}
+    \caption{Combination of Forecast Horizon with Look Back Window Size}
+    \label{tab:forecast-lookback}
+  \end{center}
+\end{table}
+
+All of these combinations are run for different lengths of the embedding vectors, these are namely $[32, 64, 128]$, these values have been chosen since they are all powers to the basis of two and these length are also discussed by \cite{optimal_embedding_length}. A longer embedding length correlates with fewer close matches, since the embeddings paint a more detailed picture with increasing length of the data they describe as shown in \cite{introduction_embeddings}. Therefore the sharpness of the embedding vectors increases but in practice this is not always advisable, since the close equivalents in the n-dimensional space they are compared in has fewer vectors as they spread out more. On the other side if the size for the embedding vector is chosen to small, not enough information and details are stored in the embedding vectors and too many close equivalents exist since the space contains less dimensions where the vectors could spread out to.
+
+Next to the different embedding length', several Loss functions are being implemented and tested to see if they hold any measurable differences for the task at hand. The loss functions in question are:
+\begin{multicols}{2}
+\begin{itemize}
+    \item custom CRPS
+    \item MSE Loss
+    \item L1 Loss
+    \item Cross-Entropy Loss
+\end{itemize}    
+\end{multicols}
+The CRPS and the L1 Loss could present similar results as the L1 Loss utilises the mean absolute error (MAE), on which also the CRPS is build. Hence with a deterministic model with non-learnable variance these two models are resulting in the same loss values. The MSE Loss is being used by \cite{Informer, autoformer} and therefor it is used here again to compare the results under similar conditions. And the Cross-Entropy Loss is used as it finds application in diverse fields including time series analysis as shown by \cite{cross-entropy_time-series}. It is not expected that one loss outperforms the others, especially not in the deterministic cases. Though for the probabilistic cases it is expected that the CRPS loss achieves better results as this function is especially designed for the usage of probabilistic forecasts. 
+
+As previously discussed the models that are used are 
+\begin{multicols}{2}
+\begin{itemize}
+    \item custom eFormer
+    \item Vanilla Transformer
+    \item Informer
+    \item Single Layer Perceptron
+\end{itemize}
+\end{multicols}
+where the Linear Model the Single Layer Perceptron acts as the absolute benchmark to beat, while the Vanilla transformer by \cite{vanilla-transformer} is the general purpose deep learning benchmark, as this model is developed to work primarily with language data and not time series. The other two models are build to work better with time series data, therefore it is expected that both models perform better compared to the other two models in terms of accuracy as well as computational costs compared to the Vanilla Transformer, as they have special Attention Modules that decrease the cost of computation. The fastest and cheapest model to train and use is expected to be the linear model, as it only contains one linear layer.
+
+\section{Results}
+
+The results are stored for each of the aforementioned combinations as different data frames, which are then combined into a dictionary to easily access all the required information filtered by the set parameters. The Results data frames are separated into three distinct groups
+\begin{multicols}{3}
+    \begin{itemize}
+        \item Hardware Usage
+        \item Epoch duration \& Loss
+        \item Predictions \& Labels
+    \end{itemize}
+\end{multicols}
+From these groups the last one is only intended for a visual presentation since the difference between the included time series is already calculated in the Validation Loss, which in turn is part of another group.
+
+The results of the hardware usage are measured every ten seconds for the CPU, RAM and GPU, therefore this is a good approximation how much maximum and average capacity the system needs for the duration of the training process. The step of measuring every ten seconds has been chosen to capture events of spikes, which in the first runs have lasted for more than ten seconds, but not less than ten seconds to limit the constraint this parallel process puts on the system and to keep the resulting data frame at reasonable sizes. 
+
+The final group the epoch duration and loss data frames capture as the name suggests the duration of one iteration of training and validation process and the validation loss calculated at the end of one such iteration. These data points are used to further enhance the estimation of the effectiveness of the models, for the duration this acts as relevant variable for the efficiency in terms of computational costs, since most services such as AWS and Lambda base their price on the time one is using their machines. On the other hand the validation loss is an indicator how effective a model is at making good predictions compared to other models and while observing the change in the validation loss, one can see how fast or slow the models converge to their final points and when they have reached their lowest point as they hit the early stopping limit. The fast convergence is a good sign as this signals that the models are potentially finishing their training faster than other models, and thus also save resources.
+
+\subsection{Hardware Usage}
+
+For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used.
+
+\begin{table}
+    \centering
+    \begin{tabular}{l|c|S|S}
+        \toprule
+        \textbf{Loss Function} & \textbf{Embedding Length} & \textbf{max Usage} & \textbf{avg Usage} \\
+        \midrule
+        CRPS & 64 &  &  \\
+        MSE  & 64 &  &  \\
+        L1   & 64 &  &  \\
+        Cross Entropy & 64 &  &  \\
+        \bottomrule
+    \end{tabular}
+    \caption{Linear Model Results}
+    \label{tab:linear_results}
+\end{table}
+
+\subsection{Epoch Duration \& Loss}
+
+\subsection{Predictions vs Labels}
 
 \newpage
 
