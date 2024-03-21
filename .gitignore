@@ -9,5 +9,3 @@ Registration_*.pdf
 !/src/Benchmarks/utils
 !/src/Benchmarks/data_provider
 !/src/Benchmarks/exp
-!/data/Results
-!/data/Windturbinen/test*.csv
