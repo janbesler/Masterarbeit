@@ -169,7 +169,7 @@ class DetSparseAttentionModule(nn.Module):
 
 # %%
 class ProbSparseAttentionModule(nn.Module):
-    def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1, seq_len):
+    def __init__(self, d_model, n_heads, seq_len, prob_sparse_factor=5, attention_dropout=0.1):
         super(ProbSparseAttentionModule, self).__init__()
         # Attention layers for both means and variances
         self.attention_layer_means = AttentionLayer(
