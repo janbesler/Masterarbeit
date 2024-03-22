@@ -1,5 +1,5 @@
 # %% [markdown]
-#  # Libraries
+#   # Libraries
 
 # %%
 # standard
@@ -14,15 +14,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # %% [markdown]
-#  # Probabilistic Sparse Attention
+#   # Probabilistic Sparse Attention
 # 
-#  Credit to [Informer](https://github.com/zhouhaoyi/Informer2020)
+#   Credit to [Informer](https://github.com/zhouhaoyi/Informer2020)
 # 
-#  Processing mean and variance:
+#   Processing mean and variance:
 # 
-#  - Separate Attention Layers: The model now has separate attention layers for processing means and variances. This allows each component to be updated based on its own dynamics.
-#  - Processing Means and Variances: Both components are processed through their respective attention layers.
-#  - Combining Outputs: The outputs (updated means and variances) are then concatenated to form the final output tensor.
+#   - Separate Attention Layers: The model now has separate attention layers for processing means and variances. This allows each component to be updated based on its own dynamics.
+#   - Processing Means and Variances: Both components are processed through their respective attention layers.
+#   - Combining Outputs: The outputs (updated means and variances) are then concatenated to form the final output tensor.
 
 # %%
 class ProbAttention(nn.Module):
@@ -94,7 +94,7 @@ class ProbAttention(nn.Module):
         queries = queries.transpose(2,1)
         keys = keys.transpose(2,1)
         values = values.transpose(2,1)
-
+        
         U_part = self.factor * np.ceil(np.log(L_K)).astype('int').item() # c*ln(L_k)
         u = self.factor * np.ceil(np.log(L_Q)).astype('int').item() # c*ln(L_q) 
 
@@ -116,13 +116,12 @@ class ProbAttention(nn.Module):
 
 
 class AttentionLayer(nn.Module):
-    def __init__(self, attention, d_model, n_heads, 
+    def __init__(self, attention, d_model, n_heads, seq_len,
                  d_keys=None, d_values=None, mix=True):
         super(AttentionLayer, self).__init__()
 
         d_keys = d_keys or (d_model//n_heads)
         d_values = d_values or (d_model//n_heads)
-
         self.inner_attention = attention
         self.query_projection = nn.Linear(d_model, d_keys * n_heads)
         self.key_projection = nn.Linear(d_model, d_keys * n_heads)
@@ -136,9 +135,9 @@ class AttentionLayer(nn.Module):
         _, S, _ = keys.shape
         H = self.n_heads
 
-        queries = self.query_projection(queries).view(B, L, H, -1)
-        keys = self.key_projection(keys).view(B, S, H, -1)
-        values = self.value_projection(values).view(B, S, H, -1)
+        queries = self.query_projection(queries).view(H, B, L, -1)
+        keys = self.key_projection(keys).view(H, B, S, -1)
+        values = self.value_projection(values).view(H, B, S, -1)
 
         out, attn = self.inner_attention(
             queries,
@@ -152,13 +151,14 @@ class AttentionLayer(nn.Module):
 
         return self.out_projection(out), attn
 
+
 # %%
 class DetSparseAttentionModule(nn.Module):
-    def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1):
+    def __init__(self, d_model, n_heads, seq_len, prob_sparse_factor=5, attention_dropout=0.1):
         super(DetSparseAttentionModule, self).__init__()
         self.attention_layer = AttentionLayer(
             ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
-            d_model=d_model, n_heads=n_heads
+            d_model=d_model, n_heads=n_heads, seq_len=seq_len
         )
 
     def forward(self, queries, keys, values, attn_mask=None):
@@ -169,12 +169,12 @@ class DetSparseAttentionModule(nn.Module):
 
 # %%
 class ProbSparseAttentionModule(nn.Module):
-    def __init__(self, d_model, n_heads, prob_sparse_factor=5, attention_dropout=0.1):
+    def __init__(self, d_model, n_heads, seq_len, prob_sparse_factor=5, attention_dropout=0.1):
         super(ProbSparseAttentionModule, self).__init__()
         # Attention layers for both means and variances
         self.attention_layer_means = AttentionLayer(
             ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
-            d_model=d_model, n_heads=n_heads
+            d_model=d_model, n_heads=n_heads, seq_len=seq_len
         )
         self.attention_layer_vars = AttentionLayer(
             ProbAttention(mask_flag=False, factor=prob_sparse_factor, scale=None, attention_dropout=attention_dropout),
