@@ -270,28 +270,21 @@ To determine whether a Model is successful in their task, standardised methods o
 
 The Mean Absolute Error (MAE) is a widely used metric for evaluating the performance of regression models. It is defined as the average of the absolute differences between the predicted and actual values. Mathematically, it is expressed as:
 
-\begin{equation}
+\begin{equation}\label{eq:MAE}
 \text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
 \end{equation}
 
 where \(y_i\) and \(\hat{y}_i\) are the actual and predicted values, respectively, and \(n\) is the number of observations. MAE is easy to interpret and provides a linear penalty for each unit of difference between the predicted and actual values \cite{MAE_RMSE}.
-Mean Absolute Percentage Error (MAPE) is another metric commonly used for evaluating regression models, particularly when the data spans several orders of magnitude. It is defined as:
-
-\begin{equation}
-\text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
-\end{equation}
-
-MAPE expresses the error as a percentage, making it unitless and easier to compare across different scales \cite{MAPE}.
 Mean Squared Error (MSE) is a metric that measures the average of the squares of the errors between the predicted and actual values. It is defined as:
 
-\begin{equation}
+\begin{equation}\label{eq:MSE}
 \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
 \end{equation}
 
 MSE penalizes larger errors more severely than smaller ones, making it sensitive to outliers \cite{MSE}.
 Root Mean Squared Error (RMSE) is the square root of MSE and is defined as:
 
-\begin{equation}
+\begin{equation}\label{eq:RMSE}
 \text{RMSE} = \sqrt{\text{MSE}}
 \end{equation}
 
@@ -299,7 +292,7 @@ RMSE has the same units as the dependent variable and is particularly useful whe
 
 The previously introduced error metrics are not developed to handle probabilistic forecasts, unlike the Continuous Ranked Probability Score (CRPS) developed by \cite{Loss_Function} which is perfectly suited for probabilistic forecasts. This metric is especially suited for the evaluation since for a deterministic forecast, the metric becomes the MAE. Thus deterministic and probabilistic models can be evaluated using the same metric. Further this metric can also be used as a loss function, for the transformer models as a replacement for the usual cross entropy loss, since it has been used for probabilistic weather forecasts in several papers as \cite{CRPS_example_1, CRPS_example_2, CRPS_example_3} show. \par 
 It is defined as:
-\begin{equation}
+\begin{equation}\label{eq:CRPS}
     CRPS(F, x) = \int_{-\infty}^{\infty} ( F(y) - \mathcal{H}(y-x) )^{2} dy
 \end{equation}
 where $F$ is a cumulative distribution function of $X$, for example $F(y) = \mathbf{P}[X \leq y]$ with $x$ being the observation and $F$ is associated with an empirical distribution forecast. $\mathcal{H}$ is a step function along the real line that attains
@@ -621,7 +614,7 @@ The final group the epoch duration and loss data frames capture as the name sugg
 
 \subsection{Hardware Usage}
 
-For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_results} only contains the results four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. 
+For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_hardware} only contains four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. 
 The GPU usage is similar for the average and the maximum usage, meaning there is no need to additional capacity, the training process could be increased speed wise, since the maximum capacity of the used V100 servers lies at ten gigabytes. But with the current hyperparameters of a batch size of 512 the remaining capacity is substantial, for the sake of comparison it is kept at the same batch size to have equal parameters across all models. 
 
 \begin{table}
@@ -638,7 +631,7 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
     \bottomrule
     \end{tabular}
     \caption{Linear Model Hardware Results}
-    \label{tab:linear_hardware_results}
+    \label{tab:linear_hardware}
 \end{table}
 
 \begin{table}
@@ -665,7 +658,7 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
     \bottomrule
     \end{tabular}
     \caption{eFormer Model Hardware Results for Forecast of 1}
-    \label{tab:eformer_hardware_results_f1}
+    \label{tab:eformer_hardware_f1}
 \end{table}
 
 \subsection{Epoch Duration \& Loss}
@@ -686,7 +679,7 @@ Another data frame of results that is being evaluated is the epoch duration, thu
     \bottomrule
     \end{tabular}
     \caption{Linear Model Hardware Results for Forecast Horizon = 1}
-    \label{tab:linear_hardware_results_f1}
+    \label{tab:linear_training_f1}
 \end{table}
 
 For the Linear Model it took a similar amount of epochs to train as for the eFormer Model, but the training time is vastly improved. This is due to the single layer that is implemented in the Linear Model against the attention modules in the eFormer with its more complex structure. Thus from this point one can conclude that the Linear Model is the better Model in terms of resource consumption during the training process, not only regarding the hardware usage as discussed before, but also the training duration. 
@@ -715,7 +708,7 @@ For the Linear Model it took a similar amount of epochs to train as for the eFor
     \bottomrule
     \end{tabular}
     \caption{eFormer Model Hardware Results for Forecast = 1}
-    \label{tab:eformer_hardware_results_f1}
+    \label{tab:eformer_training_f1}
 \end{table}
 
 For the training of the eFormer Model, that for the more complex Loss functions the number of epochs and consequently the training time is significantly higher. But what can be observed is the homogeneous avg times for the models respectively, as expected the average Epoch duration for the Linear Model is smaller than the deep learning models. For the eFormer it is less than half the training time. 
@@ -730,6 +723,30 @@ To investigate if a Model has been effective in predicting the values, on one ha
     \caption{Comparison of ground truth against 10 min forecast}
     \label{fig:Linear_f1}
 \end{figure}
+
+The plot \ref{fig:Linear_f1} shows that the loss functions CRPS and Cross Entropy Loss result in bad forecasts, since the values for these functions stays at near zero for the entire observed time horizon. This is further supported by the densities, where the values of these two functions center solely around the mark of zero and show no real distribution like patterns. On the other hand the MSE and L1 Loss perform well with accurate predictions and also showing an almost identical distribution to the ground truth values. Hence one can conclude that the MSE and L1 Loss are good choices for the Linear case with a forecast horizon of 10 minutes. But with the difference in the results for the L1 and CRPS Loss, a claim done before has to be disputed. Earlier it was said that for a deterministic case - which is true in this instance - the L1 Loss and CRPS would result in the same values, since they both show the MAE loss described in the equation \ref{eq:MAE}. Hence it is possible that a mistake has been made in the implementation of the CRPS function as a custom pytorch loss function. \par 
+For the eFormer predictions in the case for the 10 minutes forecast using an embedding length of 64 the results look worse than the linear model.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/eFormer_model_analysis.png}
+    \caption{Comparison of ground truth against 10 min forecast for embedding length of 64}
+    \label{fig:eFormer_f1_emb64}
+\end{figure}
+
+For all loss functions except for the MSE Loss the predictions are flat lines, which is further showcased in the distribution plot. Here the Cross Entropy, the L1 and CRPS Loss all have a non-existing distribution and are centred around there respective values close to zero. Therefore one can observe that this model did not perform well. Even the better prediction of the MSE Loss are nowhere the same quality as the linear forecasts, they seem to be the average over time of the ground truth. \par 
+So far neither the model nor the alternate loss function have risen to their expectations and it seems that the model is too flat in its architecture and number of layers to capture context in the provided data.
+
+\section{Discussion}
+
+The key limitations experiences in this paper are the homogeneous data from two wind farms in the same country. Therefore the training could lead to over fitting in the model and its application could be problematic in different countries with different weather influences. Further improvement of the models could be achieved by utilising hyperparameter optimization to find the best hyperparameters, but this was not performed to due time and scope constraints. 
+
+The criteria that defines a good model are not from a recognised framework. While the method to compare different error metrics is common practice as \cite{TS-ranking} showed in their time series model ranking, the method of measuring resource usage is not and its criteria are based on the availability of meta data and less a sophisticated framework. It is thus hard to draw definite conclusions how these models perform resource wise in the real world, as the training observations can be vastly altered in other settings. This approach of chosen in this paper is only valid for relative comparison in these experiments, since the models have been trained under the same circumstances. Also the development time and try and error of running the code is not accounted in here, which depending on the models can absorb a significant amount of resources too. 
+
+\section{Conclusion}
+
+The Informer model by \cite{Informer} is regarded as a good model for time series forecasting as shown by \cite{TS-ranking}. Therefor a version based on the principles of this model with the aim to be more resource efficient could in theory also perform as good as its original. Though the experiments conducted showed a different picture, with a linear model outperforming the eFormer. The reasons for this outcome can be found in the architecture, as it performed consistently across different loss functions. As discussed the problems lie within the shallow architecture which lacks the depth to learn the context in the provided data. Other models such as the vanilla transformer by \cite{vanilla-transformer} and the original Informer with their deeper layers are more suited for the task of forecasting than the developed eFormer model in this paper. Furthermore the use of the CRPS loss function does not present results comparable to the expectations, this could be due to a lackluster implementation as code and thus the problems experienced with this function arise. 
+
 
 \newpage
 
