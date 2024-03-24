@@ -615,33 +615,114 @@ The results are stored for each of the aforementioned combinations as different 
 \end{multicols}
 From these groups the last one is only intended for a visual presentation since the difference between the included time series is already calculated in the Validation Loss, which in turn is part of another group.
 
-The results of the hardware usage are measured every ten seconds for the CPU, RAM and GPU, therefore this is a good approximation how much maximum and average capacity the system needs for the duration of the training process. The step of measuring every ten seconds has been chosen to capture events of spikes, which in the first runs have lasted for more than ten seconds, but not less than ten seconds to limit the constraint this parallel process puts on the system and to keep the resulting data frame at reasonable sizes. 
+The results of the hardware usage are measured every second for the CPU, RAM and GPU, therefore this is a good approximation how much maximum and average capacity the system needs for the duration of the training process. The step of measuring every second has been chosen to capture events of spikes, which in the first runs have lasted for more than a second, but not choosing an interval smaller than one second to limit the constraint this parallel process puts on the system and to keep the resulting data frame at reasonable sizes. The hardware in use is a V100 NVidia Server with 51GB of RAM, 16GB of GPU RAM and X CPU cores with a speed of X each. 
 
 The final group the epoch duration and loss data frames capture as the name suggests the duration of one iteration of training and validation process and the validation loss calculated at the end of one such iteration. These data points are used to further enhance the estimation of the effectiveness of the models, for the duration this acts as relevant variable for the efficiency in terms of computational costs, since most services such as AWS and Lambda base their price on the time one is using their machines. On the other hand the validation loss is an indicator how effective a model is at making good predictions compared to other models and while observing the change in the validation loss, one can see how fast or slow the models converge to their final points and when they have reached their lowest point as they hit the early stopping limit. The fast convergence is a good sign as this signals that the models are potentially finishing their training faster than other models, and thus also save resources.
 
 \subsection{Hardware Usage}
 
-For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used.
+For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_results} only contains the results four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. 
+The GPU usage is similar for the average and the maximum usage, meaning there is no need to additional capacity, the training process could be increased speed wise, since the maximum capacity of the used V100 servers lies at ten gigabytes. But with the current hyperparameters of a batch size of 512 the remaining capacity is substantial, for the sake of comparison it is kept at the same batch size to have equal parameters across all models. 
 
 \begin{table}
     \centering
-    \begin{tabular}{l|c|S|S}
+    \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
-        \textbf{Loss Function} & \textbf{Embedding Length} & \textbf{max Usage} & \textbf{avg Usage} \\
+        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Horizon} & CPU & RAM & GPU & CPU & RAM & GPU \\
         \midrule
-        CRPS & 64 &  &  \\
-        MSE  & 64 &  &  \\
-        L1   & 64 &  &  \\
-        Cross Entropy & 64 &  &  \\
-        \bottomrule
+            CRPS & 1 & 39.0 & 24.925 & 0.3965 & 15.5342 & 8.0879 & 0.393 \\
+        MSELoss & 1 & 100.0 & 31.2111 & 0.4023 & 15.9607 & 12.0433 & 0.4023 \\
+        L1Loss & 1 & 100.0 & 27.2164 & 0.4023 & 19.4865 & 14.1772 & 0.4023 \\
+        CrossEntropyLoss & 1 & 22.0 & 36.8406 & 0.4023 & 15.2606 & 8.7524 & 0.4023 \\
+    \bottomrule
     \end{tabular}
-    \caption{Linear Model Results}
-    \label{tab:linear_results}
+    \caption{Linear Model Hardware Results}
+    \label{tab:linear_hardware_results}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Horizon} & CPU & RAM & GPU & CPU & RAM & GPU \\
+        \midrule
+            CRPS & 32 & 21.7 & 18.8355 & 0.9043 & 15.297 & 8.1197 & 0.8935 \\
+        MSELoss & 32 &  &  &  &  &  &  \\
+        L1Loss & 32 &  &  &  &  &  &  \\
+        CrossEntropyLoss & 32 &  &  &  &  &  &  \\
+        \midrule
+        CRPS & 64 & 19.0 & 25.3848 & 1.5215 & 15.2919 & 8.1806 & 1.4769 \\
+        MSELoss & 64 & 27.6 & 24.8843 & 1.3418 & 15.3653 & 8.0943 & 1.3081 \\
+        L1Loss & 64 & 23.0 & 25.3247 & 1.3418 & 15.4872 & 8.1273 & 1.3418 \\
+        CrossEntropyLoss & 64 & 22.4 & 25.3721 & 1.3418 & 15.2432 & 8.111 & 1.3418 \\
+        \midrule
+        CRPS & 128 &  &  &  &  &  &  \\
+        MSELoss & 128 &  &  &  &  &  &  \\
+        L1Loss & 128 &  &  &  &  &  &  \\
+        CrossEntropyLoss & 128 &  &  &  &  &  &  \\
+    \bottomrule
+    \end{tabular}
+    \caption{eFormer Model Hardware Results for Forecast of 1}
+    \label{tab:eformer_hardware_results_f1}
 \end{table}
 
 \subsection{Epoch Duration \& Loss}
 
+Another data frame of results that is being evaluated is the epoch duration, thus the total training time and the corresponding loss for each epoch. Generally speaking the smaller the epoch duration and the epoch number the better in terms of resource efficiency. For the loss function a fast conversion towards the minimum is desirable, even though the size of each step is determined by the hyperparameter learning rate which is fix at $6^{-4}$, by chance of the starting point a fast conversion is possible. 
+
+\begin{table}
+    \centering
+    \begin{tabular}{l|l|r|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{avg Epoch} \\
+        \textbf{Function} & \textbf{Horizon} &  & \textbf{Time} & \textbf{Duration} \\
+        \midrule
+            CRPS & 1 & 13 & 19.4382 & 1.4952 \\
+        MSELoss & 1 & 30 & 43.9613 & 1.4654 \\
+        L1Loss & 1 & 24 & 35.2697 & 1.4696 \\
+        CrossEntropyLoss & 1 & 15 & 22.2349 & 1.4823 \\
+    \bottomrule
+    \end{tabular}
+    \caption{Linear Model Hardware Results for Forecast Horizon = 1}
+    \label{tab:linear_hardware_results_f1}
+\end{table}
+
+For the Linear Model it took a similar amount of epochs to train as for the eFormer Model, but the training time is vastly improved. This is due to the single layer that is implemented in the Linear Model against the attention modules in the eFormer with its more complex structure. Thus from this point one can conclude that the Linear Model is the better Model in terms of resource consumption during the training process, not only regarding the hardware usage as discussed before, but also the training duration. 
+
+\begin{table}
+    \centering
+    \begin{tabular}{l|l|r|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{avg Epoch} \\
+        \textbf{Function} & \textbf{Horizon} &  & \textbf{Time} & \textbf{Duration} \\
+        \midrule
+            CRPS & 32 & 19 & 62.5813 & 3.2938 \\
+        MSELoss & 32 &  &  &  \\
+        L1Loss & 32 &  &  &  \\
+        CrossEntropyLoss & 32 &  &  &  \\
+        \midrule
+        CRPS & 64 & 15 & 52.0403 & 3.4293 \\
+        MSELoss & 64 & 22 & 75.4436 & 3.449 \\
+        L1Loss & 64 & 15 & 51.7484 & 3.4499 \\
+        CrossEntropyLoss & 64 & 46 & 158.6523 & 3.4694 \\
+        \midrule
+        CRPS & 128 &  &  &  \\
+        MSELoss & 128 &  &  &  \\
+        L1Loss & 128 &  &  &  \\
+        CrossEntropyLoss & 128 &  &  &  \\
+    \bottomrule
+    \end{tabular}
+    \caption{eFormer Model Hardware Results for Forecast = 1}
+    \label{tab:eformer_hardware_results_f1}
+\end{table}
+
+For the training of the eFormer Model, that for the more complex Loss functions the number of epochs and consequently the training time is significantly higher. But what can be observed is the homogeneous avg times for the models respectively, as expected the average Epoch duration for the Linear Model is smaller than the deep learning models. For the eFormer it is less than half the training time. 
+
 \subsection{Predictions vs Labels}
+
+To investigate if a Model has been effective in predicting the values, on one hand the validation loss during training is stored and on the other side the predictions and labels from the last epoch are stored to visualize them for eyeballing and comparing the ground truth to its forecasts visually. To get a sense of how the forecasts are comparing to the ground truth, the values are also plotted as a distribution to see how well the original values have been matched or if the model discovered some alternate ways of creating accurate predictions. 
 
 \newpage
 
