@@ -108,15 +108,7 @@
 \begin{itemize}
    \item anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
    \item Graphen eFormer aktualisieren
-   \item Colab einrichten \& Jobs starten
-   \item Informer und Autoformer auf selbe Daten trainieren
-   \item Auswertung vorbereiten
-   \begin{itemize}
-       \item Tabelle für Ressourcen Effizienz
-       \item Vergleich Modelle zu Ground Truth -> 1 bis 3 Monate
-       \item Comparison of Errors -> Werte mit Softmax angleichen?!
-   \end{itemize}
-   \item Related Work schreiben
+   \item Informer und Vanilla Transformer auf selbe Daten trainieren
    \item alle Formeln haben gleich Variablen Namen
 \end{itemize}
 
@@ -327,19 +319,16 @@ class LinearModel(nn.Module):
 \end{lstlisting}\label{code:LinearModel}
 The model consists of a single linear layer to keep this as simple as possible and achieving similar results to a linear ordinary least square regression. This model is expected to train the fastest and the least amount of resources compared to the deep learning models. Since the model works with the same batches from the data loader as the other models, the training process can be parallelised which helps with the speed of the training process. 
 
-
-\subsection{Machine Learning Models}
-
-
 \subsection{DeepLearning Models}
 
 The goal in this section is to create a distinct Transformer model for time series forecasting, not from scratch but to dissect several different published models and evaluate what each of these models did differently and if the innovative parts is beneficial to this context and data. To get an understanding of the models one has to first in what regard each one differentiates from the vanilla model and also why and how they did it. \par 
-Since the DeepLearning Models are in the centre of the research a thorough valuation of the performance of these models is conducted. With the different architectures different strategies to solve the same problem are being introduced. Therefor the results of all transformer models are compared separately in more depth, to investigate which of the architectures and strategies achieve the best performance. 
+Since the DeepLearning Models are in the centre of the research a thorough valuation of the performance of these models is conducted. With the different architectures different strategies to solve the same problem are being introduced. Therefor the results of all transformer models are compared separately in more depth, to investigate which of the architectures and strategies achieve the best performance.
 
 \subsubsection{Vanilla Transformer}
 
 The vanilla transformer represents a version that is close to the original model presented by \cite{vanilla-transformer} that utilises the attention mechanism and is not optimised in any way to a time series forecasting role, hence it has no additional layers to perform seasonal decomposition or other methods.
-The vanilla transformer has a standard encoder-decoder structure and uses fully connected layers, hence it is expected to use the most resources as no alterations have been undertaken to lower the complexity of its calculations. 
+The vanilla transformer has a standard encoder-decoder structure and uses fully connected layers, hence it is expected to use the most resources as no alterations have been undertaken to lower the complexity of its calculations. The structure for this model has been taken from this \href{https://github.com/thuml/Autoformer/blob/main/models/Transformer.py}{github repository}\footnote{Link to github: https://github.com/thuml/Autoformer/blob/main/models/Transformer.py} where it is implemented using the same overarching framework to work with the same tensor sizes as other models like the Informer and the Autoformer model. For the purposes of this thesis, the components of the model have been taken from the repository and the framework that uses and runs the models has been changed to fit the structure of the self developed models with its tensor sizes among others.
+
 
 \subsubsection{Informer}
 
@@ -360,10 +349,6 @@ The idea is the differentiation between 'active' and 'lazy' parts where respecti
     When stacking NN encoder/decoder layers, the vanilla Transformer has a memory usage of , which limits the model's capacity for long sequences. Informer uses a Distilling operation, for reducing the input size between layers into its half slice. By doing so, it reduces the whole memory usage to be.
 \end{quote}
 Another interesting aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
-
-\subsubsection{Autoformer}
-
-\cite{autoformer}
 
 \subsection{eFormer}
 
@@ -551,6 +536,8 @@ where $w_i$ is the weight matrix from the decoder part that enables the weighted
 
 \subsection{Experiment Setup}
 
+The code for all the experiments can be found at the respective \href{https://github.com/janbesler/Masterarbeit}{github repository}.
+
 The same models are trained on different parameters, as stated in the beginning the overarching goal is to forecast for different forecast horizons. For the longer forecast horizons the look back window has to be larger to give the chance of capturing more context in the larger pool of data. To check if these larger windows have a general benefit on forecasting the shorter forecast horizons are also tested on the larger look back windows. Therefor the following setups shown in \ref{tab:forecast-lookback} can be derived for each model with different sizes for the embedding vectors. 
 
 \begin{table}[h!]
@@ -735,13 +722,33 @@ For the eFormer predictions in the case for the 10 minutes forecast using an emb
 \end{figure}
 
 For all loss functions except for the MSE Loss the predictions are flat lines, which is further showcased in the distribution plot. Here the Cross Entropy, the L1 and CRPS Loss all have a non-existing distribution and are centred around there respective values close to zero. Therefore one can observe that this model did not perform well. Even the better prediction of the MSE Loss are nowhere the same quality as the linear forecasts, they seem to be the average over time of the ground truth. \par 
-So far neither the model nor the alternate loss function have risen to their expectations and it seems that the model is too flat in its architecture and number of layers to capture context in the provided data.
+
+
+\begin{itemize}
+    \item graph for validation loss -> comparison of convergence
+    \item graph \& table with best approaches from each model
+    \item results for probabilistic models
+\end{itemize}
 
 \section{Discussion}
+
+So far neither the model nor the alternate loss function have risen to their expectations and it seems that the model is too flat in its architecture and number of layers to capture context in the provided data. Going back to the paper of \cite{transformers-effectiveness}, are transfomers really needed in time series forecasting, this thesis supports their claim that linear models also perform well compared to the much more sophisticated models like transformers. Especially if one looks at the stark difference in resource requirements between these two model families.
+
+\subsection{Deterministic and Probabilistic Forecasts}
+
+\subsection{Limitations}
 
 The key limitations experiences in this paper are the homogeneous data from two wind farms in the same country. Therefore the training could lead to over fitting in the model and its application could be problematic in different countries with different weather influences. Further improvement of the models could be achieved by utilising hyperparameter optimization to find the best hyperparameters, but this was not performed to due time and scope constraints. 
 
 The criteria that defines a good model are not from a recognised framework. While the method to compare different error metrics is common practice as \cite{TS-ranking} showed in their time series model ranking, the method of measuring resource usage is not and its criteria are based on the availability of meta data and less a sophisticated framework. It is thus hard to draw definite conclusions how these models perform resource wise in the real world, as the training observations can be vastly altered in other settings. This approach of chosen in this paper is only valid for relative comparison in these experiments, since the models have been trained under the same circumstances. Also the development time and try and error of running the code is not accounted in here, which depending on the models can absorb a significant amount of resources too. 
+
+\subsection{Future Research}
+
+\begin{itemize}
+    \item comparison between deterministic and probabilistic results
+    \item lack of external data like wind forecast for area
+    \item for company data, lack of explanatory variables like when orders and thus production switches
+\end{itemize}
 
 \section{Conclusion}
 
