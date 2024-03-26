@@ -88,6 +88,6 @@ class TimeSeriesDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        features = torch.tensor(self.features[idx], dtype=torch.float)
-        labels = torch.tensor(self.labels[idx], dtype=torch.float)
+        features = torch.FloatTensor(self.features[idx])
+        labels = torch.FloatTensor([self.labels[idx]])
         return features, labels

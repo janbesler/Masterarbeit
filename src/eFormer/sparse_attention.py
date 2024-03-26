@@ -135,9 +135,9 @@ class AttentionLayer(nn.Module):
         _, S, _ = keys.shape
         H = self.n_heads
 
-        queries = self.query_projection(queries).view(H, B, L, -1)
-        keys = self.key_projection(keys).view(H, B, S, -1)
-        values = self.value_projection(values).view(H, B, S, -1)
+        queries = self.query_projection(queries).view(B, L, H, -1)
+        keys = self.key_projection(keys).view(B, S, H, -1)
+        values = self.value_projection(values).view(B, S, H, -1)
 
         out, attn = self.inner_attention(
             queries,

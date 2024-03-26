@@ -3,9 +3,3 @@ Registration_*.pdf
 /data/*
 *.zip
 *.pyc
-/src/Benchmarks/*
-!/src/Benchmarks/models
-!/src/Benchmarks/layers
-!/src/Benchmarks/utils
-!/src/Benchmarks/data_provider
-!/src/Benchmarks/exp

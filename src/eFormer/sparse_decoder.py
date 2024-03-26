@@ -63,8 +63,8 @@ class SparseDecoder(nn.Module):
         pos_encodings = self.pos_encoder(dummy_input)
 
         # Apply encoder-decoder attention using positional encodings as queries and encoder outputs as keys and values
-        attn_output = self.cross_attention(encoder_output, encoder_output, encoder_output).mean(1)
-        attn_output = self.norm1(attn_output + self.dropout(attn_output)).unsqueeze(1)
+        attn_output = self.cross_attention(encoder_output, encoder_output, encoder_output)
+        attn_output = self.norm1(attn_output + self.dropout(attn_output))
 
         # Feed-forward network
         ff_output = attn_output.transpose(-1, 1)  # Prepare for conv1d
@@ -74,7 +74,7 @@ class SparseDecoder(nn.Module):
         ff_output = self.norm2(attn_output + self.dropout(ff_output))
 
         # Generate forecasts based on the attention output
-        forecasts = self.output_layer(ff_output).squeeze(-1)
+        forecasts = self.output_layer(ff_output)[:, -self.forecast_horizon:, 0]
         
         return forecasts, ff_output
 
@@ -93,7 +93,7 @@ class DetSparseDecoder(nn.Module):
         # calculate attention
         attention_output, weights = self.SparseDecoder(encoder_output)
 
-        return attention_output.squeeze(1), weights.squeeze(1)
+        return attention_output, weights
 
 # %%
 class ProbSparseDecoder(nn.Module):
@@ -122,7 +122,7 @@ class ProbSparseDecoder(nn.Module):
         attention_output_var, weights_var = self.SparseDecoder_var(output_variance)
 
         # Combine the processed means and variances
-        combined_output = torch.stack([attention_output_mean.squeeze(1), attention_output_var.squeeze(1)], dim=0)
-        combined_weights = torch.stack([weights_mean.squeeze(1), weights_var.squeeze(1)], dim=0)
+        combined_output = torch.stack([attention_output_mean, attention_output_var], dim=0)
+        combined_weights = torch.stack([weights_mean, weights_var], dim=0)
 
         return combined_output, combined_weights
