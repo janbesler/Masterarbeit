@@ -102,6 +102,12 @@ class Informer(nn.Module):
         super(Informer, self).__init__()
         self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
+        self.Embeddings = Encoding(
+            in_features=(configs.seq_len * 2),
+            batch_size=configs.batch_size,
+            seq_len=configs.seq_len,
+            len_embedding_vector=configs.len_embedding
+        )
 
         # Encoder
         self.encoder = Encoder(
