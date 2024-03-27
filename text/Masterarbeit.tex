@@ -201,7 +201,7 @@ hence this is being dropped for being a technical mistake, since the wind speed 
 To investigate when the missing values occurred the power generation has been mapped in figure \ref{fig:Kelmarsh-missing-values} over the whole time span while the missing values have been color coded in red.
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{graphs/Windturbine - Time Series.png}
+    \includegraphics[width=\linewidth]{graphs/data/Windturbine - Time Series.png}
     \caption{Complete Power Output - Kelmarsh \#6}
     \label{fig:Kelmarsh-missing-values}
 \end{figure}
@@ -223,12 +223,12 @@ The extent can also be seen in the visualization of the $6^th$ turbine in the ri
     \centering
     \begin{subfigure}[b]{0.45\linewidth}
         \centering
-        \includegraphics[width=\linewidth]{graphs/Kelmarsh_output_distribution.png}
+        \includegraphics[width=\linewidth]{graphs/data/Kelmarsh_output_distribution.png}
         \caption{total}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\linewidth}
         \centering
-        \includegraphics[width=\linewidth]{graphs/Corr_Wind_Power.png}
+        \includegraphics[width=\linewidth]{graphs/data/Corr_Wind_Power.png}
         \caption{\#6}
     \end{subfigure}
     \caption{Kelmarsh power distribution}
@@ -328,7 +328,14 @@ Since the DeepLearning Models are in the centre of the research a thorough valua
 
 The vanilla transformer represents a version that is close to the original model presented by \cite{vanilla-transformer} that utilises the attention mechanism and is not optimised in any way to a time series forecasting role, hence it has no additional layers to perform seasonal decomposition or other methods.
 The vanilla transformer has a standard encoder-decoder structure and uses fully connected layers, hence it is expected to use the most resources as no alterations have been undertaken to lower the complexity of its calculations. The structure for this model has been taken from this \href{https://github.com/thuml/Autoformer/blob/main/models/Transformer.py}{github repository}\footnote{Link to github: https://github.com/thuml/Autoformer/blob/main/models/Transformer.py} where it is implemented using the same overarching framework to work with the same tensor sizes as other models like the Informer and the Autoformer model. For the purposes of this thesis, the components of the model have been taken from the repository and the framework that uses and runs the models has been changed to fit the structure of the self developed models with its tensor sizes among others.
-
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/models/VanillaTransformer.png}
+    \caption{Vanilla Transformer Architecture}
+    \label{fig:VanillaTransformer_architecture}
+\end{figure}
+It is not in this scope of the thesis to explain the inner workings of this transformer model here in detail, \cite{vanilla-transformer} describe their model and its parts in their paper. \par 
+But the key differences implemented in this model focus on the embeddings which are fed into the model. To work around the complex framework implemented by \cite{autoformer} in their code, the embedding function written for the eFormer model utilising the time2vec method from \cite{time2vec} is used. This holds the advantage of allowing to use the same functions across different models and keep the dimensions for all inputs and outputs the same, hence the usability and generalization of the code improves. Another aspect that is changed from the original code is the output, while \cite{autoformer} intended to use their code across different data sets and make the model as accessible for other data sets as possible, by incorporating many different options. The code used here is more streamlined and therefor less accessible for other data sets, but it is easier to maintain. 
 
 \subsubsection{Informer}
 
@@ -340,15 +347,11 @@ where $T$ is the length of the time series and $D$ is the dimension of the hidde
 \begin{equation*}
     O(T \cdot log{T}) .
 \end{equation*}
-The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered
-\begin{quote}
-    Quadratic computation of canonical self-attention:
-    The vanilla Transformer has a computational complexity of  where TT is the time series length and DD is the dimension of the hidden states. For long sequence time-series forecasting (also known as the LSTF problem), this might be really computationally expensive. To solve this problem, Informer employs a new self-attention mechanism called ProbSparse attention, which has time and space complexity.
+The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered in the further calculations ...
+
+The advantage in terms of memory bottleneck for stacking encoder and decoder layers for this method lies in the ability to use longer sequences in compared to the vanilla Transformer. Since it uses its Distilling operation, effectively reducing the input size between layers into half slices, hence it reduces the whole memory usage to ...
     
-    Memory bottleneck when stacking layers:
-    When stacking NN encoder/decoder layers, the vanilla Transformer has a memory usage of , which limits the model's capacity for long sequences. Informer uses a Distilling operation, for reducing the input size between layers into its half slice. By doing so, it reduces the whole memory usage to be.
-\end{quote}
-Another interesting aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
+Another aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
 
 \subsection{eFormer}
 
@@ -409,7 +412,7 @@ This part replaces the vanilla attention mechanism and focuses on dropping secti
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=\linewidth]{graphs/Sparse_Attention_Example.png}
+    \includegraphics[width=\linewidth]{graphs/models/Sparse_Attention_Example.png}
     \caption{Vanilla self Attention and Sparse Attention from Informer}
     \label{fig:sparse_attention}
 \end{figure}
@@ -421,12 +424,12 @@ The arcitecture of the transformers utilising the sparse attention mechanism is 
 \begin{figure}[!ht]
     \hspace*{\fill}
     \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{graphs/eFormer_probSparse.png}
+        \includegraphics[width=\linewidth]{graphs/models/eFormer_probSparse.png}
         \caption{probabilistic}        
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{graphs/eFormer_det_sparse.png}
+        \includegraphics[width=\linewidth]{graphs/models/eFormer_det_sparse.png}
         \caption{deterministic}
     \end{subfigure}
     \hspace*{\fill}
@@ -648,6 +651,34 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
     \label{tab:eformer_hardware_f1}
 \end{table}
 
+\begin{table}
+    \centering
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss Function} & \textbf{Embedding Length} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        & & CPU & RAM & GPU & CPU & RAM & GPU \\
+        \midrule
+            CRPS & 32 &  &  &  &  &  &  \\
+        MSELoss & 32 &  &  &  &  &  &  \\
+        L1Loss & 32 &  &  &  &  &  &  \\
+        CrossEntropyLoss & 32 &  &  &  &  &  &  \\
+        \midrule
+        CRPS & 64 & 54.4 & 24.0935 & 1.2461 & 40.1597 & 8.1274 & 1.2064 \\
+        MSELoss & 64 & 100.0 & 42.0759 & 2.9727 & 45.527 & 13.851 & 2.9648 \\
+        L1Loss & 64 & 100.0 & 30.9259 & 2.9727 & 47.1468 & 13.4471 & 2.9727 \\
+        CrossEntropyLoss & 64 &  &  &  &  &  &  \\
+        \midrule
+        CRPS & 128 &  &  &  &  &  &  \\
+        MSELoss & 128 &  &  &  &  &  &  \\
+        L1Loss & 128 &  &  &  &  &  &  \\
+        CrossEntropyLoss & 128 &  &  &  &  &  &  \\
+        \midrule
+    \bottomrule
+    \end{tabular}
+    \caption{Vanilla Transformer Model Hardware Results for Forecast = 1}
+    \label{tab:vanillatransformer_hardware_results_f1}
+\end{table}
+
 \subsection{Epoch Duration \& Loss}
 
 Another data frame of results that is being evaluated is the epoch duration, thus the total training time and the corresponding loss for each epoch. Generally speaking the smaller the epoch duration and the epoch number the better in terms of resource efficiency. For the loss function a fast conversion towards the minimum is desirable, even though the size of each step is determined by the hyperparameter learning rate which is fix at $6^{-4}$, by chance of the starting point a fast conversion is possible. 
@@ -699,6 +730,32 @@ For the Linear Model it took a similar amount of epochs to train as for the eFor
 \end{table}
 
 For the training of the eFormer Model, that for the more complex Loss functions the number of epochs and consequently the training time is significantly higher. But what can be observed is the homogeneous avg times for the models respectively, as expected the average Epoch duration for the Linear Model is smaller than the deep learning models. For the eFormer it is less than half the training time. 
+
+\begin{table}
+    \centering
+    \begin{tabular}{l|l|r|S|S}
+        \toprule
+        \textbf{Loss Function} & \textbf{Embedding Length} & \textbf{Epochs} & \textbf{Training Time} & \textbf{avg Epoch Duration} \\
+        \midrule
+            CRPS & 32 &  &  &  \\
+        MSELoss & 32 &  &  &  \\
+        L1Loss & 32 &  &  &  \\
+        CrossEntropyLoss & 32 &  &  &  \\
+        \midrule
+        CRPS & 64 & 5 & 18.1416 & 3.6283 \\
+        MSELoss & 64 & 16 & 59.2444 & 3.7028 \\
+        L1Loss & 64 & 18 & 65.6114 & 3.6451 \\
+        CrossEntropyLoss & 64 &  &  &  \\
+        \midrule
+        CRPS & 128 &  &  &  \\
+        MSELoss & 128 &  &  &  \\
+        L1Loss & 128 &  &  &  \\
+        CrossEntropyLoss & 128 &  &  &  \\
+      \bottomrule
+    \end{tabular}
+    \caption{Vanilla Transformer Model Hardware Results for Forecast = 1}
+    \label{tab:vanillatransformer_hardware_results_f1}
+    \end{table}
 
 \subsection{Predictions vs Labels}
 
