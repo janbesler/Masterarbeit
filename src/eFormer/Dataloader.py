@@ -27,8 +27,10 @@ class TimeSeriesDataProcessor:
     def padding_data(self, dataframe):
         remainder = dataframe.shape[0] % self.batch_size
         if remainder == 0:
-            return dataframe  # Already divisible by batch size
-        return dataframe[:-remainder]
+            return dataframe # Already divisible by batch size
+        discard = remainder
+        if isinstance(dataframe, pd.DataFrame):
+            return dataframe[discard:]
 
     def shifted_data(self):
         data = self.dataframe
@@ -37,12 +39,14 @@ class TimeSeriesDataProcessor:
         shifts = range(forecast, look_back + forecast)
         variables = data.columns
 
-        # Pre-allocate list for holding shifted data
-        shifted_columns = [data]
-        for i in shifts:
-            shifted_columns.extend([data.shift(i).add_suffix(f" (lag {i})") for column in variables])
-
-        data_shifted = pd.concat(shifted_columns, axis=1)
+        shifted_columns = []
+        for column in variables:
+            for i in shifts:
+                shifted_df = data[[column]].shift(i)
+                shifted_df.rename(columns={column: f"{column} (lag {i})"}, inplace=True)
+                shifted_columns.append(shifted_df)
+        
+        data_shifted = pd.concat([data] + shifted_columns, axis=1)
         data_shifted.dropna(inplace=True)
 
         return data_shifted
