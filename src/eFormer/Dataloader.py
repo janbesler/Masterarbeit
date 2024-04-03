@@ -1,6 +1,8 @@
 # %%
 # Standard Libraries
 import pandas as pd
+import gc
+from memory_profiler import profile
 
 # Machine Learning
 import torch
@@ -14,6 +16,7 @@ from sklearn.model_selection import train_test_split
 # 12 hours look back to predict next value
 
 # %%
+
 class TimeSeriesDataProcessor:
     def __init__(self, dataframe, forecast, look_back, batch_size=64, train_size=0.7, test_size=0.5, random_state=42):
         self.dataframe = dataframe
@@ -70,14 +73,7 @@ class TimeSeriesDataProcessor:
         self.test_dataset = TimeSeriesDataset(df_test)
         self.eval_dataset = TimeSeriesDataset(df_eval)
 
-    def create_dataloaders(self):
-        self.prepare_datasets()
-
-        self.train_loader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
-        self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
-        self.eval_loader = DataLoader(self.eval_dataset, batch_size=self.batch_size, shuffle=False)
-
-        return self.train_loader, self.test_loader, self.eval_loader
+        return self.train_dataset, self.test_dataset, self.eval_dataset
 
 class TimeSeriesDataset(Dataset):
     def __init__(self, dataframe):
