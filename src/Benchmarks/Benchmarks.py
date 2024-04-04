@@ -20,12 +20,12 @@ class VanillaTransformer(nn.Module):
     """
     Vanilla Transformer with O(L^2) complexity
     """
-    def __init__(self, configs):
+    def __init__(self, configs, seq_len):
         super(VanillaTransformer, self).__init__()
         self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
         self.Embeddings = Encoding(
-            in_features=(configs.seq_len * 2),
+            in_features=seq_len,
             batch_size=configs.batch_size,
             seq_len=configs.seq_len,
             len_embedding_vector=configs.len_embedding
@@ -98,12 +98,12 @@ class Informer(nn.Module):
     """
     Informer with Propspare attention in O(LlogL) complexity
     """
-    def __init__(self, configs):
+    def __init__(self, configs, seq_len):
         super(Informer, self).__init__()
         self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
         self.Embeddings = Encoding(
-            in_features=(configs.seq_len * 2),
+            in_features=seq_len,
             batch_size=configs.batch_size,
             seq_len=configs.seq_len,
             len_embedding_vector=configs.len_embedding
