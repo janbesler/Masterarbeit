@@ -110,6 +110,10 @@
    \item Graphen eFormer aktualisieren
    \item Informer und Vanilla Transformer auf selbe Daten trainieren
    \item alle Formeln haben gleich Variablen Namen
+   \item Informer: 72, 144
+   \item Vanillatransformer: emb64 -> L1 6 \& 
+   \item eFormer: 72, 144
+   \item linear: L1 -> 6
 \end{itemize}
 
 \subsection{Motivation}
@@ -604,79 +608,130 @@ The final group the epoch duration and loss data frames capture as the name sugg
 
 \subsection{Hardware Usage}
 
-For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_hardware} only contains four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. 
+For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_hardware} only contains four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike across all models and Loss functions can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously in the data loader. After this bottleneck the RAM spikes never occur again in such magnitude. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. \par 
 The GPU usage is similar for the average and the maximum usage, meaning there is no need to additional capacity, the training process could be increased speed wise, since the maximum capacity of the used V100 servers lies at ten gigabytes. But with the current hyperparameters of a batch size of 512 the remaining capacity is substantial, for the sake of comparison it is kept at the same batch size to have equal parameters across all models. 
 
 \begin{table}
+    \footnotesize
     \centering
+    \caption{Linear Model Hardware Results}
     \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
-        \textbf{Function} & \textbf{Horizon} & CPU & RAM & GPU & CPU & RAM & GPU \\
+        \textbf{Function} & \textbf{Horizon} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
         \midrule
-            CRPS & 1 & 39.0 & 24.925 & 0.3965 & 15.5342 & 8.0879 & 0.393 \\
-        MSELoss & 1 & 100.0 & 31.2111 & 0.4023 & 15.9607 & 12.0433 & 0.4023 \\
-        L1Loss & 1 & 100.0 & 27.2164 & 0.4023 & 19.4865 & 14.1772 & 0.4023 \\
-        CrossEntropyLoss & 1 & 22.0 & 36.8406 & 0.4023 & 15.2606 & 8.7524 & 0.4023 \\
+        CRPS & 1 & 24.5 & 8.2529 & 0.416 & 15.5598 & 8.1493 & 0.416 \\
+        MSE & 1 & 25.0 & 8.0487 & 0.3965 & 15.8084 & 7.8799 & 0.3936 \\
+        L1 & 1 & 25.2 & 8.2727 & 0.416 & 15.8348 & 8.1863 & 0.416 \\
+        \midrule
+        CRPS & 6 & 24.2 & 8.2508 & 0.416 & 15.5146 & 8.1714 & 0.416 \\
+        MSE & 6 & 25.6 & 8.1368 & 0.3965 & 15.8478 & 8.0447 & 0.3965 \\
+        L1 & 6 & 25.5 & 8.3929 & 0.416 & 15.8739 & 8.2895 & 0.416 \\
+        \midrule
+        CRPS & 72 & 24.7 & 25.8702 & 0.416 & 15.5017 & 25.3396 & 0.416 \\
+        MSE & 72 & 25.4 & 25.7994 & 0.3965 & 15.9529 & 25.051 & 0.3965 \\
+        L1 & 72 & 23.8 & 25.9554 & 0.416 & 15.8362 & 24.9946 & 0.416 \\
+        \midrule
+        CRPS & 144 & 24.0 & 47.3446 & 0.416 & 15.4113 & 44.94 & 0.416 \\
+        MSE & 144 & 25.6 & 47.4935 & 0.416 & 15.8783 & 45.869 & 0.416 \\
+        L1 & 144 & 25.3 & 47.5861 & 0.416 & 15.8157 & 44.9186 & 0.416 \\
     \bottomrule
     \end{tabular}
-    \caption{Linear Model Hardware Results}
     \label{tab:linear_hardware}
 \end{table}
 
 \begin{table}
+    \footnotesize
     \centering
+    \caption{eFormer Model Hardware Results for Forecast = 6}
     \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
-        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
-        \textbf{Function} & \textbf{Horizon} & CPU & RAM & GPU & CPU & RAM & GPU \\
+        \textbf{Loss} & \textbf{Embedding} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Length} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
         \midrule
-            CRPS & 32 & 21.7 & 18.8355 & 0.9043 & 15.297 & 8.1197 & 0.8935 \\
-        MSELoss & 32 &  &  &  &  &  &  \\
-        L1Loss & 32 &  &  &  &  &  &  \\
-        CrossEntropyLoss & 32 &  &  &  &  &  &  \\
+        CRPS & 32 & 71.0 & 14.0473 & 1.5371 & 64.3825 & 13.9536 & 1.5371 \\
+        MSE & 32 & 71.0 & 14.2312 & 0.873 & 64.0783 & 13.8792 & 0.8728 \\
+        L1 & 32 & 71.8 & 14.0313 & 1.5352 & 65.0532 & 13.9467 & 1.5352 \\
         \midrule
-        CRPS & 64 & 19.0 & 25.3848 & 1.5215 & 15.2919 & 8.1806 & 1.4769 \\
-        MSELoss & 64 & 27.6 & 24.8843 & 1.3418 & 15.3653 & 8.0943 & 1.3081 \\
-        L1Loss & 64 & 23.0 & 25.3247 & 1.3418 & 15.4872 & 8.1273 & 1.3418 \\
-        CrossEntropyLoss & 64 & 22.4 & 25.3721 & 1.3418 & 15.2432 & 8.111 & 1.3418 \\
+        CRPS & 64 & 70.0 & 14.1169 & 1.5371 & 63.6695 & 14.047 & 1.5371 \\
+        MSE & 64 & 71.1 & 14.0182 & 1.0938 & 63.7473 & 13.9465 & 1.0922 \\
+        L1 & 64 & 71.2 & 14.041 & 1.5352 & 64.0915 & 13.9614 & 1.5352 \\
         \midrule
-        CRPS & 128 &  &  &  &  &  &  \\
-        MSELoss & 128 &  &  &  &  &  &  \\
-        L1Loss & 128 &  &  &  &  &  &  \\
-        CrossEntropyLoss & 128 &  &  &  &  &  &  \\
+        CRPS & 128 & 66.5 & 14.1367 & 1.5371 & 60.1154 & 14.0306 & 1.5371 \\
+        MSE & 128 & 66.6 & 14.0188 & 1.5352 & 60.964 & 13.9608 & 1.5333 \\
+        L1 & 128 & 67.2 & 14.0407 & 1.5352 & 60.6614 & 13.9786 & 1.5352 \\
     \bottomrule
     \end{tabular}
-    \caption{eFormer Model Hardware Results for Forecast of 1}
-    \label{tab:eformer_hardware_f1}
+    \label{tab:eformer_hardware_f6}
 \end{table}
 
 \begin{table}
+    \footnotesize
     \centering
+    \caption{VanillaTransformer Model Hardware Results for Forecast = 6}
     \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
-        \textbf{Loss Function} & \textbf{Embedding Length} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
-        & & CPU & RAM & GPU & CPU & RAM & GPU \\
+        \textbf{Loss} & \textbf{Embedding} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Length} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
         \midrule
-            CRPS & 32 &  &  &  &  &  &  \\
-        MSELoss & 32 &  &  &  &  &  &  \\
-        L1Loss & 32 &  &  &  &  &  &  \\
-        CrossEntropyLoss & 32 &  &  &  &  &  &  \\
+        MSE & 32 & 59.6 & 7.9908 & 1.0762 & 40.1941 & 7.9169 & 1.0711 \\
+        L1 & 32 & 55.0 & 8.3419 & 1.6875 & 39.8451 & 8.2588 & 1.6875 \\
         \midrule
-        CRPS & 64 & 54.4 & 24.0935 & 1.2461 & 40.1597 & 8.1274 & 1.2064 \\
-        MSELoss & 64 & 100.0 & 42.0759 & 2.9727 & 45.527 & 13.851 & 2.9648 \\
-        L1Loss & 64 & 100.0 & 30.9259 & 2.9727 & 47.1468 & 13.4471 & 2.9727 \\
-        CrossEntropyLoss & 64 &  &  &  &  &  &  \\
+        MSE & 64 & 100.0 & 42.0759 & 2.9727 & 45.527 & 13.851 & 2.9648 \\
+        L1 & 64 & 100.0 & 30.9259 & 2.9727 & 47.1468 & 13.4471 & 2.9727 \\
         \midrule
-        CRPS & 128 &  &  &  &  &  &  \\
-        MSELoss & 128 &  &  &  &  &  &  \\
-        L1Loss & 128 &  &  &  &  &  &  \\
-        CrossEntropyLoss & 128 &  &  &  &  &  &  \\
-        \midrule
+        MSE & 128 & 61.2 & 8.4467 & 1.6875 & 41.1515 & 8.3857 & 1.6747 \\
+        L1 & 128 & 58.2 & 8.3387 & 1.6875 & 40.7646 & 8.2766 & 1.6875 \\
     \bottomrule
     \end{tabular}
-    \caption{Vanilla Transformer Model Hardware Results for Forecast = 1}
-    \label{tab:vanillatransformer_hardware_results_f1}
+    \label{tab:vanillatransformer_hardware_f6}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Informer Model Hardware Results for Forecast = 6}
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Embedding} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Length} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
+        \midrule
+        MSE & 32 & 53.3 & 8.0623 & 0.7715 & 39.009 & 7.7727 & 0.7686 \\
+        L1 & 32 & 53.7 & 8.4872 & 1.4902 & 38.9235 & 8.3968 & 1.4902 \\
+        \midrule
+        MSE & 64 & 52.2 & 8.3992 & 1.0234 & 37.7099 & 8.3183 & 1.0225 \\
+        L1 & 64 & 51.0 & 8.5536 & 1.4902 & 38.4718 & 8.4442 & 1.4902 \\
+        \midrule
+        MSE & 128 & 54.2 & 8.4896 & 1.4902 & 38.0454 & 8.3917 & 1.4878 \\
+        L1 & 128 & 50.7 & 8.5385 & 1.4902 & 37.573 & 8.4417 & 1.4902 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:informer_hardware_f6}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{eFormer Model Hardware Results}
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Horizon} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
+        \midrule
+        MSE & 1 & 74.8 & 8.1822 & 0.8301 & 64.4926 & 8.0418 & 0.8121 \\
+        L1 & 1 & 73.0 & 8.4206 & 3.3789 & 63.4702 & 8.3481 & 3.3789 \\
+        \midrule
+        MSE & 6 & 71.0 & 14.2312 & 0.873 & 64.0783 & 13.8792 & 0.8728 \\
+        L1 & 6 & 73.6 & 8.4276 & 3.3789 & 63.9189 & 8.3514 & 3.3789 \\
+        \midrule
+        MSE & 72 & 65.6 & 26.3948 & 2.1035 & 54.1944 & 26.0339 & 2.0652 \\
+        L1 & 72 & 62.5 & 26.2108 & 3.3789 & 52.6659 & 25.9123 & 3.3789 \\
+        \midrule
+        MSE & 144 & 56.1 & 47.7485 & 3.3789 & 45.1301 & 47.1554 & 3.3448 \\
+        L1 & 144 & 55.9 & 47.9712 & 3.3789 & 45.5213 & 46.6185 & 3.3789 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:eformer_hardware_emb32}
 \end{table}
 
 \subsection{Epoch Duration \& Loss}
@@ -684,78 +739,212 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
 Another data frame of results that is being evaluated is the epoch duration, thus the total training time and the corresponding loss for each epoch. Generally speaking the smaller the epoch duration and the epoch number the better in terms of resource efficiency. For the loss function a fast conversion towards the minimum is desirable, even though the size of each step is determined by the hyperparameter learning rate which is fix at $6^{-4}$, by chance of the starting point a fast conversion is possible. 
 
 \begin{table}
+    \footnotesize
     \centering
-    \begin{tabular}{l|l|r|S|S}
+    \caption{Linear Model Epoch Results}
+    \begin{tabular}{l|l|r|S|S|S}
         \toprule
-        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{avg Epoch} \\
-        \textbf{Function} & \textbf{Horizon} &  & \textbf{Time} & \textbf{Duration} \\
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
         \midrule
-            CRPS & 1 & 13 & 19.4382 & 1.4952 \\
-        MSELoss & 1 & 30 & 43.9613 & 1.4654 \\
-        L1Loss & 1 & 24 & 35.2697 & 1.4696 \\
-        CrossEntropyLoss & 1 & 15 & 22.2349 & 1.4823 \\
+        CRPS & 1 & 9 & 16.5561 & 110.3743 & 0.5761 \\
+        MSE & 1 & 12 & 21.3846 & 106.9229 & 840817.2209 \\
+        L1 & 1 & 18 & 33.4259 & 111.4196 & 706.8088 \\
+        \midrule
+        CRPS & 6 & 14 & 25.359 & 108.6812 & 0.8748 \\
+        MSE & 6 & 20 & 35.5379 & 106.6137 & 849046.452 \\
+        L1 & 6 & 12 & 21.5681 & 107.8403 & 707.8288 \\
+        \midrule
+        CRPS & 72 & 19 & 47.5539 & 150.1701 & 0.6651 \\
+        MSE & 72 & 14 & 34.6577 & 148.5329 & 842904.3729 \\
+        L1 & 72 & 10 & 24.6159 & 147.6955 & 705.6111 \\
+        \midrule
+        CRPS & 144 & 13 & 46.4006 & 214.1565 & 12.8155 \\
+        MSE & 144 & 16 & 61.1374 & 229.2653 & 845536.7289 \\
+        L1 & 144 & 10 & 35.637 & 213.8218 & 705.3632 \\
     \bottomrule
     \end{tabular}
-    \caption{Linear Model Hardware Results for Forecast Horizon = 1}
-    \label{tab:linear_training_f1}
+    \label{tab:linear_epoch}
 \end{table}
 
 For the Linear Model it took a similar amount of epochs to train as for the eFormer Model, but the training time is vastly improved. This is due to the single layer that is implemented in the Linear Model against the attention modules in the eFormer with its more complex structure. Thus from this point one can conclude that the Linear Model is the better Model in terms of resource consumption during the training process, not only regarding the hardware usage as discussed before, but also the training duration. 
 
 \begin{table}
+    \footnotesize
     \centering
-    \begin{tabular}{l|l|r|S|S}
+    \caption{eFormer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
         \toprule
-        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{avg Epoch} \\
-        \textbf{Function} & \textbf{Horizon} &  & \textbf{Time} & \textbf{Duration} \\
+        \textbf{Loss} & \textbf{Embedding} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Length} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
         \midrule
-            CRPS & 32 & 19 & 62.5813 & 3.2938 \\
-        MSELoss & 32 &  &  &  \\
-        L1Loss & 32 &  &  &  \\
-        CrossEntropyLoss & 32 &  &  &  \\
+            CRPS & 32 & 9 & 35.4183 & 236.1222 & 0.24926 \\
+        MSE & 32 & 12 & 50.4342 & 252.171 & 814856.159313 \\
+        L1 & 32 & 11 & 43.2423 & 235.8672 & 698.817171 \\
         \midrule
-        CRPS & 64 & 15 & 52.0403 & 3.4293 \\
-        MSELoss & 64 & 22 & 75.4436 & 3.449 \\
-        L1Loss & 64 & 15 & 51.7484 & 3.4499 \\
-        CrossEntropyLoss & 64 & 46 & 158.6523 & 3.4694 \\
+        CRPS & 64 & 23 & 97.0196 & 253.0946 & 0.24926 \\
+        MSE & 64 & 18 & 79.0996 & 263.6654 & 841062.463866 \\
+        L1 & 64 & 13 & 54.6072 & 252.0331 & 703.261532 \\
         \midrule
-        CRPS & 128 &  &  &  \\
-        MSELoss & 128 &  &  &  \\
-        L1Loss & 128 &  &  &  \\
-        CrossEntropyLoss & 128 &  &  &  \\
+        CRPS & 128 & 19 & 107.4323 & 339.26 & 0.24926 \\
+        MSE & 128 & 24 & 134.8271 & 337.0678 & 825660.56904 \\
+        L1 & 128 & 18 & 99.901 & 333.0033 & 710.622352 \\
+      \bottomrule
+    \end{tabular}
+    \label{tab:eformer_training_f6}
+    \end{table}
+
+The table \ref{tab:eformer_training_f6} shows that the test loss for the embedding length of $32$ is the lowest for the MSE and L1 Loss, and for the CRPS it stays the same across the different embedding lengths. Furthermore the average epoch duration is shorter as well as the total training time. Also table \ref{tab:eformer_hardware_f6} shows that the resources consumed during the training process do not differ across the embedding lengths but only across the loss functions. \par 
+Hence it can be concluded that the embedding length of $32$ is best choice for a resource efficient model, and this embedding length will be further used in the other experiments for different forecast horizons. Since the Test Loss stayed the same for the eFormer Model, and the validation loss stayed the same as well across different validation losses, the Loss function CRPS is therefor emitted from further experiments to save resources as it is not working as planned. This is shown in table \ref{tab:CRPS_convergence} where the convergence of the validation loss is shown across different models.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{CRPS Convergence}
+    \begin{tabular}{l|S|S|S}
+        \toprule
+        \textbf{Epoch} & \textbf{eFormer} & \textbf{Vanilla Transformer} & \textbf{Informer} \\
+        \midrule
+        1 & 0.249272 & 0.249270 & 0.249290 \\
+        2 & 0.249268 & 0.249268 & 0.249269 \\
+        3 & 0.249268 & 0.249268 & 0.249268 \\
+        4 & 0.249268 & 0.249268 & 0.249268 \\
+        5 & 0.249268 & 0.249268 & 0.249268 \\
+        6 & 0.249268 & 0.249268 & 0.249268 \\
+        7 & 0.249268 & 0.249268 & 0.249268 \\
+        8 & 0.249268 & 0.249268 & 0.249268 \\
+        9 & 0.249268 &  & 0.249268 \\
+        10 & 0.249268 &  & 0.249268 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:CRPS_convergence}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{eFormer Model Epoch Results}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+        MSE & 1 & 11 & 46.6282 & 254.3355 & 829884.842 \\
+        L1 & 1 & 12 & 51.7815 & 258.9076 & 694.003 \\
+        \midrule
+        MSE & 6 & 12 & 50.4342 & 252.171 & 842792.1887 \\
+        L1 & 6 & 12 & 50.3788 & 251.8938 & 711.0292 \\
+        \midrule
+        MSE & 72 & 12 & 82.3167 & 411.5836 & 826222.6849 \\
+        L1 & 72 & 14 & 98.1348 & 420.5778 & 712.7202 \\
+        \midrule
+        MSE & 144 & 14 & 179.3583 & 768.6786 & 804736.5377 \\
+        L1 & 144 & 13 & 163.555 & 754.8694 & 702.4061 \\
     \bottomrule
     \end{tabular}
-    \caption{eFormer Model Hardware Results for Forecast = 1}
-    \label{tab:eformer_training_f1}
+    \label{tab:eformer_epoch}
 \end{table}
 
 For the training of the eFormer Model, that for the more complex Loss functions the number of epochs and consequently the training time is significantly higher. But what can be observed is the homogeneous avg times for the models respectively, as expected the average Epoch duration for the Linear Model is smaller than the deep learning models. For the eFormer it is less than half the training time. 
 
 \begin{table}
     \centering
-    \begin{tabular}{l|l|r|S|S}
+    \footnotesize
+    \caption{Vanilla Transformer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
         \toprule
-        \textbf{Loss Function} & \textbf{Embedding Length} & \textbf{Epochs} & \textbf{Training Time} & \textbf{avg Epoch Duration} \\
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
         \midrule
-            CRPS & 32 &  &  &  \\
-        MSELoss & 32 &  &  &  \\
-        L1Loss & 32 &  &  &  \\
-        CrossEntropyLoss & 32 &  &  &  \\
+        MSE & 32 & 28 & 102.9003 & 220.5007 & 806905.5154 \\
+        L1 & 32 & 12 & 44.0136 & 220.0678 & 694.5086 \\
         \midrule
-        CRPS & 64 & 5 & 18.1416 & 3.6283 \\
-        MSELoss & 64 & 16 & 59.2444 & 3.7028 \\
-        L1Loss & 64 & 18 & 65.6114 & 3.6451 \\
-        CrossEntropyLoss & 64 &  &  &  \\
+        MSE & 64 & 25 & 103.4476 & 248.2743 & 792598.0144 \\
+        L1 & 64 & 33 & 125.9821 & 229.0584 & N/A \\
         \midrule
-        CRPS & 128 &  &  &  \\
-        MSELoss & 128 &  &  &  \\
-        L1Loss & 128 &  &  &  \\
-        CrossEntropyLoss & 128 &  &  &  \\
+        MSE & 128 & 21 & 84.5759 & 241.6454 & 809573.6123 \\
+        L1 & 128 & 16 & 64.2135 & 240.8007 & 700.3386 \\
       \bottomrule
     \end{tabular}
-    \caption{Vanilla Transformer Model Hardware Results for Forecast = 1}
-    \label{tab:vanillatransformer_hardware_results_f1}
+    \label{tab:vanillatransformer_training_f6}
     \end{table}
+
+For the Vanilla Transformer, the embedding size of $64$ has the lowest losses for the 
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{VanillaTransformer Model Epoch Results}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+        MSE & 1 & 16 & 59.2444 & 222.1666 & 813.2103 \\
+        L1 & 1 & 18 & 65.6114 & 218.7045 & 17.427 \\
+        \midrule
+        MSE & 6 & 25 & 103.4476 & 248.2743 & 25192.7359 \\
+        L1 & 6 & 12 & 48.1177 & 240.5886 & 97.3959 \\
+        \midrule
+        MSE & 72 & 34 & 295.9651 & 522.2914 & 25084.026 \\
+        L1 & 72 & 12 & 104.8477 & 524.2387 & 97.7682 \\
+        \midrule
+        MSE & 144 &  &  &  &  \\
+        L1 & 144 &  &  &  &  \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:vanillatransformer_epoch}
+\end{table}
+
+\begin{table}
+    \centering
+    \caption{Informer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+        MSE & 32 & 11 & 105.8341 & 577.2772 & 805348.1503 \\
+        L1 & 32 & 12 & 109.3351 & 546.6756 & 695.1579 \\
+        \midrule
+        MSE & 64 & 11 & 85.6144 & 466.9875 & 832401.4625 \\
+        L1 & 64 & 10 & 91.6458 & 549.8746 & 707.4773 \\
+        \midrule
+        MSE & 128 & 12 & 112.1187 & 560.5934 & 859436.3235 \\
+        L1 & 128 & 11 & 102.4461 & 558.7969 & 707.1238 \\
+      \bottomrule
+    \end{tabular}
+    \label{tab:informer_training_f6}
+    \end{table}
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Informer Model Epoch Results}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+            CRPS & 1 &  &  &  &  \\
+        MSE & 1 &  &  &  &  \\
+        L1 & 1 &  &  &  &  \\
+        \midrule
+        CRPS & 6 & 22 & 180.4892 & 492.2433 & 0.2493 \\
+        MSE & 6 & 14 & 141.3269 & 605.6866 & 25280.4381 \\
+        L1 & 6 & 15 & 144.3216 & 577.2864 & 95.5785 \\
+        \midrule
+        CRPS & 72 &  &  &  &  \\
+        MSE & 72 &  &  &  &  \\
+        L1 & 72 &  &  &  &  \\
+        \midrule
+        CRPS & 144 &  &  &  &  \\
+        MSE & 144 &  &  &  &  \\
+        L1 & 144 &  &  &  &  \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:informer_epoch}
+\end{table}
 
 \subsection{Predictions vs Labels}
 
@@ -764,7 +953,7 @@ To investigate if a Model has been effective in predicting the values, on one ha
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/results/Linear_model_analysis.png}
-    \caption{Comparison of ground truth against 10 min forecast}
+    \caption{Linear Model - 1 step forecast}
     \label{fig:Linear_f1}
 \end{figure}
 
@@ -774,12 +963,18 @@ For the eFormer predictions in the case for the 10 minutes forecast using an emb
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/results/eFormer_model_analysis.png}
-    \caption{Comparison of ground truth against 10 min forecast for embedding length of 64}
+    \caption{eFormer - 1 step forecast}
     \label{fig:eFormer_f1_emb64}
 \end{figure}
 
 For all loss functions except for the MSE Loss the predictions are flat lines, which is further showcased in the distribution plot. Here the Cross Entropy, the L1 and CRPS Loss all have a non-existing distribution and are centred around there respective values close to zero. Therefore one can observe that this model did not perform well. Even the better prediction of the MSE Loss are nowhere the same quality as the linear forecasts, they seem to be the average over time of the ground truth. \par 
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/VanillaTransformer_model_analysis.png}
+    \caption{Vanilla Transformer - 1 step forecast}
+    \label{fig:vanillatransformer_f1_emb64}
+\end{figure}
 
 \begin{itemize}
     \item graph for validation loss -> comparison of convergence
