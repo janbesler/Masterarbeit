@@ -93,87 +93,65 @@
 
 \begin{document}
 
-\maketitle
-
 \tableofcontents
-
-\lstlistoflistings
 
 \newpage
 
 \section{Introduction}
 
-\subsection{To-Do}
-
-\begin{itemize}
-   \item anhand von Korrdinaten gucken wo genau welche turbine steht, map basteln und average wind einzeichnen
-   \item Graphen eFormer aktualisieren
-   \item Informer und Vanilla Transformer auf selbe Daten trainieren
-   \item alle Formeln haben gleich Variablen Namen
-   \item Informer: 72, 144
-   \item Vanillatransformer: emb64 -> L1 6 \& 
-   \item eFormer: 72, 144
-   \item linear: L1 -> 6
-\end{itemize}
-
 \subsection{Motivation}
 
-In early 2023, Large Language Models (LLM) attracted much public attention with the emergence of ChatGPT. The development of these models can be traced back to the development of transformer models, which have proven useful in the field of NLP. These transformer models use sequential data as input, i.e. a data point depends on the previous data points.
-These Transformer models are also popular in other fields, such as time series forecasting, where the data is sequential by definition. In this research area, other models still receive a lot of attention, for example Long Short Term Memory (LSTM). The question therefore arises why Transformer models are not solely used for time series forecasting? This question was investigated by \cite{transformers-effectiveness} and their hypothesis is that it depends on the complexity of the underlying data which model performs better.
-They concluded that transformers only have an advantage when they work with complex data structures, such as languages and text data. Thus, a transformer model with less complex data may lead to worse results compared to another model such as an LSTM. \par 
-In order to investigate the hypothesis put forward by \cite{transformers-effectiveness}, this thesis will test different models on data with different levels of complexity. The data chosen is from wind turbines for the more complex side and electricity consumption from different companies on the less complex side. These applications were chosen to investigate how predictive models can be improved. And whether it is generally worthwhile to develop more complex models for different use cases if they might give worse results than previous solutions. \par 
+In early 2023, Large Language Models (LLMs) significantly captured public interest with the introduction of ChatGPT. The evolution of these models is rooted in the development of transformer architectures, which have demonstrated substantial utility in the domain of Natural Language Processing (NLP). Transformers process sequential data, where each data point builds on the previous one. They have also become popular in other areas, like time series forecasting, where data naturally follows a sequence. Despite this, older models such as Long Short-Term Memory (LSTM) networks continue to be relevant. This brings up an interesting question: why aren't transformer models the sole choice for time series forecasting? This issue was investigated by \cite{transformers-effectiveness}, who proposed that the best model choice depends on the data's complexity. Their research indicates that transformers are particularly effective with complex structures like language, but might not perform as well with simpler data, where an LSTM or even a simpler linear model could be more effective. \par
+This thesis aims to delve deeper into this hypothesis by assessing various models on data with different complexity levels. Wind turbine operations have been selected for this purpose, to see if advanced modeling techniques can indeed enhance forecast accuracy and determine if the sophistication of these models is warranted, especially if they might not always outperform simpler models. \par
 
-In the area of electricity generation and consumption, forecasting is a relevant issue to drive the decarbonisation of the economy through the deployment of renewable energy. With the introduction of more renewable energy systems, electricity production fluctuates more than before, while demand patterns remain largely the same. This leads to conflicts, as demand and production need to be perfectly matched at all times. In addition, the stability of the power grid must be taken into account, as a production peak can lead to problems with the frequency of the power grid, which in turn can lead to system-wide failures and power outages. To avoid these problems, it is important to predict electricity production with high accuracy in order to know when the flow of electricity needs to be regulated by the relevant authorities and companies. On the other hand, it is beneficial for companies to know when they will consume the amount of energy for the corresponding time. This makes it easier to plan ahead, to take advantage of lower prices on the spot market and is another contribution to the stability of the electricity grid.\par 
+Forecasting in the electricity generation and consumption sectors is crucial for pushing the decarbonization by integrating more renewable energy sources. The increased variability and volatility in electricity production from these sources presents a stark contrast to the relatively stable demand patterns, posing significant operational challenges. Such challenges require the demand and supply to be in constant sync to maintain grid stability. \cite{stability_grid} provides an overview over the challenges and inner workings for the German electricity market. Variations in production can disrupt the grid frequency, possibly leading to extensive power failures. Therefore, making precise predictions about electricity production is vital to help regulatory bodies and utility companies manage these dynamics effectively. Additionally, accurate consumption forecasts enable companies to plan better, capitalize on lower spot market prices, and support overall grid stability. \par
 
-The deep learning models used, are probabilistic and not deterministic. This is due to the advantages of probabilistic models when working with noisy data and the resulting probability distributions as outcomes instead of deterministic values. With the ability to quantify the uncertainty of forecasts, there is an advantage to modelling in a probabilistic way by understanding the range and probability of possible outcomes. Even if there is no exact value for the outcome, ranges can be given to estimate how big the impact will be.
-However, the disadvantages of working with probabilistic models are the increased complexity due to working with probability distributions as outcomes, making the results less intuitive to interpret. In addition, the increased complexity leads to higher computational costs and thus greater demands on limited resources.
+Addressing the challenge of matching fluctuating renewable energy supply with consistent electricity demand, and ensuring grid stability, underscores the practical importance of this thesis. Deep learning models are particularly promising for this task because they excel in handling noisy data and can learn from historical sequences as \cite{deep-learning_general_info} have described in their study. However, this research will not overlook the trade-offs associated with these models, such as the higher computational demands and the complexities involved in building and understanding the models. By examining these factors, this study aims to contribute to the enhancement of energy system operations and broaden the understanding of how advanced predictive models can be effectively integrated into strategic decision-making processes.
 
-The critical importance of time series forecasting in the advancement of renewable energy systems underscores the need for effective predictive models. The advent of Large Language Models (LLMs) such as ChatGPT in early 2023 has reignited interest in the underlying transformer models, whose sequential data processing capabilities have shown promise beyond the confines of Natural Language Processing (NLP). Despite their success, the adoption of transformer models in domains like time series forecasting, where data is inherently sequential, is not ubiquitous, presenting a research opportunity to investigate their relative efficacy compared to established models such as Long Short Term Memory (LSTM) networks.
-
-Zeng et al., 2022 posited that the complexity of the data dictates the performance superiority between these models, a hypothesis that is both compelling and critical for applications where precision forecasting is pivotal. This thesis aims to explore this hypothesis by comparing the performance of different models on datasets with varying complexity levels, specifically focusing on wind turbine data for complex scenarios and electricity consumption for less complex cases. These domains have been strategically selected for their acute relevance to energy management and the pursuit of decarbonization.
-
-The imperative to match electricity demand with the fluctuating supply from renewable sources, and the need for grid stability, establish a real-world urgency for this research. Probabilistic deep learning models offer a means to address these challenges, with their advantages in managing noisy data and providing forecasts with quantified uncertainties. This thesis will also scrutinize the trade-offs presented by probabilistic models, such as increased computational costs and the nuanced interpretation of their probabilistic outcomes. Through this analysis, the research endeavors to contribute to the optimization of energy systems and to the broader understanding of the applicability of advanced predictive models in strategic decision-making.
 
 \subsection{Research Question}
 
-This study aims to critically assess the value added by transformer models in time series forecasting by examining their accuracy, complexity, and resource demands in comparison to less complex models such as LSTMs. The research will seek to determine whether the benefits provided by transformers justify their implementation in practical applications where time and resources are significant constraints. Consequently, the central research question is articulated as follows: "To what extent do transformer models in time series forecasting provide a justifiable advantage over traditional methods considering their complexity and resource consumption?"
+This study is designed to evaluate the advantages of using transformer models for time series forecasting by comparing their accuracy, complexity, and resource demands against simpler models, such as a linear model. The aim is to determine if the performance enhancements provided by transformers are sufficient to outweigh their higher complexity and resource use in practical settings. Therefore, the primary research question posed is: "To what extent do transformer models provide a justifiable benefit over traditional forecasting methods in terms of their complexity and resource consumption?"
 
-To address this multifaceted question, the research will be guided by a series of sub-questions:
+The investigation will proceed through a series of detailed sub-questions:
 
 \begin{enumerate}
-    \item What constitutes an effective model in time series forecasting, balancing accuracy, training duration, interpretability, and resource utilization?
-    \item How can we ensure comparability between different datasets to validate the results, accounting for variations in time intervals, time zones, data integrity, and relevance of external factors such as weather conditions?
-    \item Under what circumstances do transformer models excel over linear and LSTM models, and what is the magnitude of improvement observed?
-    \item Among the various transformer models analyzed, which demonstrates superior performance, and what are the distinguishing architectural features that contribute to this performance?
+    \item What characteristics define an effective model for time series forecasting, considering factors like accuracy, training time, interpretability, and resource usage?
+    \item How can comparability be ensured across diverse datasets to confirm the findings, given differences in time intervals, time zones, data quality, and the impact of external variables like weather?
+    \item In what scenarios do transformer models outperform linear models, and how significant is the observed improvement?
+    \item Which transformer models show the best performance, and what unique architectural features contribute to their effectiveness?
 \end{enumerate}
 
-Through this structured inquiry, the thesis will contribute to a nuanced understanding of the applicability and efficacy of transformer models in the field of time series forecasting.
+This methodical approach will enhance the understanding of transformer models' role and effectiveness in time series forecasting, providing clear insights into their practical applications.
+
 
 \section{Related Work}
 
-With the rise of the transformer models, in different applications as NLP and Computer Vision, so came the specialisations of these models as shown in \cite{Transformer-Survey}. These ideas of different approaches and goals also reached the time series models, several sub categories emerged as shown by \cite{Transformer-TS-Survey}, but one area of special interest for this paper is time series forecasting, where \cite{forecasting-overview} gives an overview of forecasting methods in the area of electricity production and consumption. A more specific overview of deep learning models in time series forecasting is done by \cite{Transformer-TS-PV}, even though it focuses on predicting data in the area of photovoltaic, the overview and explanations for energy related data is useful in this paper too and gives an overview for the models that are suitable. \par 
-In the area of probabilistic forecasting the work by \cite{Prob-Forecast-Overview} shows the increasing interest in prediction intervals and densities, especially after the GEFCOM14 competition numerous papers on the issue of probabilistic forecasting have been published. After this surge, a few papers of interest for this paper have been published, these include the Informer model, utilising sparse attention mechanism by \cite{Informer}, the autoformer which emphasizes auto regression, written by \cite{autoformer}. The time2vec paper by \cite{time2vec} investigates how embeddings and positional encodings can differ for time series forecasting due to their periodic time features.
+The advent of transformer models since the architecture was introduced by \cite{vanilla-transformer} has marked significant advancements in fields such as NLP and Computer Vision, leading to specialized adaptations of these models, as discussed in \cite{Transformer-Survey}. This trend of specialization has extended to time series models, with several subcategories emerging, as outlined in \cite{Transformer-TS-Survey}. This paper focuses particularly on time series forecasting, a domain gaining traction within electricity production and consumption forecasting, reviewed comprehensively in \cite{forecasting-overview}. A detailed discussion on the application of deep learning models to time series forecasting, specifically in the context of photovoltaic data, is provided by \cite{Transformer-TS-PV}, offering insights that are also applicable to the broader energy sector discussed in this paper.
+
+In the realm of probabilistic forecasting, the work highlighted in \cite{Prob-Forecast-Overview} underscores a growing interest in prediction intervals and densities, particularly following the outcomes of the GEFCOM14 competition, which sparked numerous subsequent studies. Among the noteworthy developments are the Informer model, which employs a sparse attention mechanism as detailed by \cite{Informer}, and the autoformer, which focuses on autoregression techniques, discussed in \cite{autoformer}. Additionally, the time2vec paper by \cite{time2vec} explores the unique requirements of embeddings and positional encodings in time series forecasting, acknowledging the periodic nature of time-related features.
+
+The successful application of transformer architectures in addressing real-world challenges has been documented in several studies \cite{transformer_application_1, transformer_application_2}. Furthermore, a detailed analysis by \cite{transformer_application_survey} explores the use of these models in forecasting wind power, assessing their effectiveness in both short-term and long-term forecasting scenarios.
+
 
 \section{Data}
 
-Two data sets are used to compare the data complexity types. On the more complex side is SCADA wind farm data from \cite{Windpark_Data_1}, which is 10-minute SCADA and event data from the 6 Senvion MM92s at the Kelmarsh wind farm, grouped by year from 2016 to mid-2021. On the less complex side is electricity consumption data from 3 manufacturing companies in Germany provided by Fraunhofer IPA. The data is available in 15-minute intervals and shows the electricity consumption in a hierarchical representation.
-Do determine the complexity of a data set, the auto correlation is being used as a metric. The lower the auto correlation the higher the data complexity. 
+To incorporate variability in the dataset analysis, this study utilizes SCADA wind farm data from \cite{Windpark_Data_1} and \cite{Windpark_Data_2}. This data encompasses SCADA and event records over 10-minute intervals from the 6 and 13 Senvion MM92s located at the Kelmarsh and Penmanshiel wind farms, respectively, spanning from 2016 to mid-2021. The complexity of each dataset is evaluated using autocorrelation as a metric, with a lower value indicating higher data complexity.
 
-\subsection{Wind farms}
-
-The two Windmill parks are located on the British Isle, the first park 'Kelmarsh' is located between Cambridge and Birmingham, while the second park is located south-east of Edinburgh on the coast. 
-Table \ref{tab:preprocessing_windturbines} shows a summary of some pre-processing steps conlcuded with the two data sets. A striking fact is the number of outliers in the \textit{Kelmarsh} Park, as well one Z-Score in the \textit{Penmanshiel} Park which indicates a electricity production of
+The wind farms under study are in Great Britain. The Kelmarsh park is located on the countryside between Cambridge and Birmingham, while the Penmanshiel park is on the southeast of Edinburgh near the coast. Table \ref{tab:preprocessing_windturbines} summarizes the preprocessing steps undertaken with these datasets, highlighting the significant number of outliers in the Kelmarsh data and an extreme Z-Score as defined by \cite{econometrics_intro} in the Penmanshiel dataset, indicative of a potential data entry error:
 \begin{equation*}
     \text{electricity production} = \mu + 497 \cdot \sigma
 \end{equation*}
-hence this is being dropped for being a technical mistake, since the wind speed at that time did not change compared to the hours before and after. 
+This value has been excluded from further analysis as it likely represents a technical mistake, evidenced by the stable wind speeds immediately before and after the anomaly.
 
-\begin{table}[!ht]
-\small
+\begin{table}
+\footnotesize
 \centering
+\caption{Summary of Pre-processing Steps for Wind Turbine Data}
     \begin{tabular}{l|c|r|r|r|S|r}
     \toprule
-    \textbf{Location} & \textbf{Turbine} & \textbf{Total Values} & \textbf{Missing Values} & \textbf{Outliers} & \textbf{Highest Z-Score} & \textbf{Stationarity} \\
+    \textbf{Location} & \textbf{Turbine} & \textbf{Total Values} & \textbf{Missing} & \textbf{Outliers} & \textbf{Highest} & \textbf{Stationarity} \\
+     & & \textbf{Total Values} & \textbf{Values} & \textbf{Outliers} & \textbf{Z-Score} & \\
     \midrule
 \textbf{Kelmarsh} & 1 & 288 864 & 3449 & 6 & 3.835573 & yes \\
          & 2 & 288 864 & 3041 & 5 & 3.636474 & yes \\
@@ -182,14 +160,14 @@ hence this is being dropped for being a technical mistake, since the wind speed 
          & 5 & 288 864 & 3937 & 3091 & 4.793479 & yes \\
          & 6 & 288 864 & 5072 & 4625 & 5.445566 & yes \\
     \midrule
-\textbf{Penmanshiel} & 01 & 266 435 & 1418 & 0 & 0.000000 & yes \\
-            & 02 & 266 923 & 2903 & 1 & 3.441052 & yes \\
-            & 04 & 265 447 & 924 & 1 & 3.374390 & yes \\
-            & 05 & 265 135 & 802 & 1 & 3.479419 & yes \\
-            & 06 & 267 012 & 3732 & 1 & 497.073209 & yes \\
-            & 07 & 267 014 & 1032 & 1 & 3.595320 & yes \\
-            & 08 & 259 106 & 3977 & 1 & 3.302787 & yes \\
-            & 09 & 263 882 & 9076 & 0 & 0.000000 & yes \\
+\textbf{Penmanshiel} & 1 & 266 435 & 1418 & 0 & 0.000000 & yes \\
+            & 2 & 266 923 & 2903 & 1 & 3.441052 & yes \\
+            & 4 & 265 447 & 924 & 1 & 3.374390 & yes \\
+            & 5 & 265 135 & 802 & 1 & 3.479419 & yes \\
+            & 6 & 267 012 & 3732 & 1 & 497.073209 & yes \\
+            & 7 & 267 014 & 1032 & 1 & 3.595320 & yes \\
+            & 8 & 259 106 & 3977 & 1 & 3.302787 & yes \\
+            & 9 & 263 882 & 9076 & 0 & 0.000000 & yes \\
             & 10 & 263 412 & 8492 & 1 & 3.760396 & yes \\
             & 11 & 260 294 & 4977 & 1 & 3.372419 & yes \\
             & 12 & 262 702 & 7259 & 1 & 3.230310 & yes \\
@@ -198,11 +176,11 @@ hence this is being dropped for being a technical mistake, since the wind speed 
             & 15 & 260 952 & 5640 & 1 & 3.298785 & yes \\
     \bottomrule
     \end{tabular}
-\caption{Summary of Pre-processing Steps for Wind Turbine Data}
 \label{tab:preprocessing_windturbines}
 \end{table}
 
-To investigate when the missing values occurred the power generation has been mapped in figure \ref{fig:Kelmarsh-missing-values} over the whole time span while the missing values have been color coded in red.
+To assess when the missing values occurred, power generation data from the Kelmarsh turbines has been plotted in figure \ref{fig:Kelmarsh-missing-values}, with missing values highlighted in red. 
+
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/data/Windturbine - Time Series.png}
@@ -210,18 +188,15 @@ To investigate when the missing values occurred the power generation has been ma
     \label{fig:Kelmarsh-missing-values}
 \end{figure}
 
-Here it becomes visible that most of the missing values are all found in the beginning of the time series, this could be an indicator that not every wind mill was being monitored from the same time on wards as different magnitudes in the missing values for the different turbines show. As a result all missing values in the beginning are being dropped as well as all sequences in each time series with a duration of more than 3 hours since keeping these values does not hold any value for the forecasting task. These outages could be attributed to for example maintenance work. Sin
-
-For the already mentioned problem of having too many outliers in 3 of 6 turbines remains. Outliers in this context have been defined as
+This visualization reveals that the majority of missing data occurs at the beginning of the time series, suggesting that not all turbines were monitored from the start. As a result, all initial missing values, as well as sequences in each time series lasting more than three hours, are omitted from the analysis, as their retention offers no benefit to the forecasting task. These outages are likely due to maintenance activities. The issue of excessive outliers in three of the six turbines at Kelmarsh remains. Outliers have been defined as:
 \begin{equation}
-    |\text{outlier}| >= 3 * \left( \frac{x - \mu}{\sigma} \right)
+    |\text{outlier}| \geq 3 \times \left( \frac{x - \mu}{\sigma} \right)
 \end{equation}
-the factor of three was chosen instead of the more usual two to account for extremes in wind speed especially in the coastal areas. To visualize the potential outliers all values for the Kelmarsh Wind park have been mapped as a kernel density estimation. The left figure \ref{fig:Kelmarsh-distribution} shows that the majority of values are centred around zero, hence no electricity output and presumably no wind speed. But there is also the practice of turning a turbine out of the wind if the situation demands it, hence no electricity production even though there would be enough wind. To test this hypothesis an deeper analysis of the turbine 6 was done to investigate how often this particular turbine was turned out of the wind. This was defined as 
+The threshold of three, rather than the more conventional two, accounts for extreme wind speeds particularly prevalent in coastal areas. To illustrate the potential outliers, all data points for the Kelmarsh wind park have been visualized using a kernel density estimation. The left part of figure \ref{fig:Kelmarsh-distribution} shows that the majority of values cluster around zero, indicating no electricity output, which could suggest inactive turbines due to operational decisions unrelated to wind conditions, such as economic considerations or grid capacity. To validate this, a detailed analysis of turbine 6 was conducted to determine the frequency with which it was turned away from the wind, defined as:
 \begin{equation}
     \text{out of wind} = \text{Wind speed (m/s)} > 3 \land \text{Power (kW)} < 1 
 \end{equation}
-resulting in $8705$ values being flagged, or equally $3.16 \%$ of all values. Therefor the data is being removed since the decision of turning a turbine out of the wind is influenced more by the stock exchange prices or the load factor of the electricity grid and has nothing to do with the prediction based on weather indicators. \par 
-The extent can also be seen in the visualization of the $6^th$ turbine in the right figure \ref{fig:Kelmarsh-distribution}
+resulting in 8,705 instances, or 3.16\% of all data points being flagged. Consequently, these data points are removed as their inclusion is influenced more by market or grid demands rather than meteorological conditions. The extent can also be seen in the visualization of the $6^th$ turbine in the right figure \ref{fig:Kelmarsh-distribution}
 
 \begin{figure}[h!]
     \centering
@@ -239,59 +214,45 @@ The extent can also be seen in the visualization of the $6^th$ turbine in the ri
     \label{fig:Kelmarsh-distribution}
 \end{figure}
 
-
-
-
-
-\subsection{Industrial Electricity Consumption}
-
-
-
-
-
-
 \section{Methodology}
 
-The models selected for evaluation are several different transformer models, an LSTM model and a non-machine learning based model that serves as a benchmark for the other models. For the benchmark task, the Random Forest was chosen because of its numerous applications in the field of time series forecasting in previous work. The models that use deep neural networks are not written from scratch, but come from various publicly available libraries (PyTorch). These basic models are then fine-tuned using hyperparameter search. For the transformer models, various models from renowned papers as well as a self-made shallow transformer are selected to test whether the depth of the network has a large impact on the results. The forecast horizons are 1 hour, 24 hours and 96 hours, with the last forecast being the most difficult task. This last number was chosen because the weather forecasts are also produced for a 96-hour period. This rating is based on the total computational time to evaluate all models and the computational resources in terms of GPU/CPU and RAM usage.\par 
+This study evaluates several forecasting models including multiple transformer architectures, and a benchmark model. The benchmark chosen is the linear regression model, picked for its usage in time series forecasting across various studies and the low complexity and thus resource efficient training as \cite{linear_forecasting_survey} shows in their literature review. The deep learning models employed are sourced from established GitHub repositories. The selection of transformer models includes both models from literature and a custom-built shallow transformer to explore the impact of network depth on forecasting accuracy. Forecasting horizons are set at 10 minutes, 1 hour, 6 hours, and 24 hours, aligning the longest with typical forecasts for spot market auctions to present a real world application as \cite{spot_market_forecasting} have shown in their work.
 
-It is difficult to quantify whether a model provides a benefit in terms of increased predictive accuracy compared to the computational costs spent on development. Due to scalability, a small increase in accuracy can justify huge development costs when deployed at scale. The data is first pre-processed in a data pipeline to detect outliers and find missing values that could later affect the models. In a second step, the data is fed into the different models, and each of the datasets is compared against certain metrics to measure the performance of the models. Finally, the results are printed in tabular form and presented graphically for better comparability in the paper. \par 
-Though an important question remains, how to assess the goodness of the models in a more qualitative way. Is accuracy more important, than training time and resources or is a intuitive interpretation for a broader audience also important?
+Evaluating the trade-off between increased predictive accuracy and the computational cost incurred is complex. In scalable environments, even marginal accuracy improvements can justify significant development expenditures. Initially, the data undergoes preprocessing to identify outliers and missing values, which could potentially influence model performance. Subsequently, it is processed through the various models, with performance compared across established metrics. Results are systematically tabulated and graphically presented to facilitate clear comparisons.
 
-The aim for the newly developed model is generalization with complex and less complex data, therefor it is not planned to include layers for extra steps found in other models such as seasonal decomposition or trend analysis.
+A critical consideration remains: determining the most meaningful way to assess model effectiveness. Beyond accuracy, factors such as training time, resource consumption, and the ease of interpretation for a broader audience are also crucial. The newly developed model aims for robust generalization across datasets, intentionally omitting specialized layers for seasonal decomposition or trend analysis found in other models.
+
 
 \subsection{Model Evaluation}
 \subsubsection{Error Metrics}
 
-To determine whether a Model is successful in their task, standardised methods of comparison are needed. These already exist for the accuracy, as the metric to determine the goodness of a model is measured in how small the error of a model is. These errors can be measured in different ways, with the most prominent ones in regression analysis being:
+Evaluating the success of a model necessitates standardized methods to compare its performance accurately. In regression analysis, the effectiveness of a model is commonly assessed by the magnitude of its error; the smaller the error, the better the model's performance. Among the standard metrics used are:
 
-The Mean Absolute Error (MAE) is a widely used metric for evaluating the performance of regression models. It is defined as the average of the absolute differences between the predicted and actual values. Mathematically, it is expressed as:
+Mean Absolute Error (MAE) is a straightforward metric for assessing regression model performance. It is calculated as the average of the absolute differences between predicted and actual values. The formula for MAE is given by:
 
 \begin{equation}\label{eq:MAE}
 \text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
 \end{equation}
 
-where \(y_i\) and \(\hat{y}_i\) are the actual and predicted values, respectively, and \(n\) is the number of observations. MAE is easy to interpret and provides a linear penalty for each unit of difference between the predicted and actual values \cite{MAE_RMSE}.
-Mean Squared Error (MSE) is a metric that measures the average of the squares of the errors between the predicted and actual values. It is defined as:
+
+where $y_i$ and $\hat{y}_i$ represent the actual and predicted values, respectively, and $n$ is the total number of observations. MAE offers an easily interpretable metric, applying a linear penalty for each unit of error between the predicted and actual values which is expertly explained by \cite{MAE_RMSE}.
+
+Mean Squared Error (MSE), another widely utilized metric, averages the squares of the prediction errors:
 
 \begin{equation}\label{eq:MSE}
 \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
 \end{equation}
 
-MSE penalizes larger errors more severely than smaller ones, making it sensitive to outliers \cite{MSE}.
-Root Mean Squared Error (RMSE) is the square root of MSE and is defined as:
+MSE is particularly sensitive to larger errors, thereby heavily penalizing larger deviations from actual values as shown by \cite{MSE}.
 
-\begin{equation}\label{eq:RMSE}
-\text{RMSE} = \sqrt{\text{MSE}}
-\end{equation}
+For probabilistic forecasts, traditional metrics like MAE and MSE may not suffice. The Continuous Ranked Probability Score (CRPS) is designed to handle probabilistic forecasts. It measures the accuracy of a probabilistic forecast and reduces to the MAE in the case of deterministic forecasts. CRPS is thus a versatile metric that can be used to evaluate both deterministic and probabilistic models. Moreover, it can also serve as a loss function in training models, replacing the conventional cross-entropy loss. This metric has been widely adopted for probabilistic weather forecasting, as evidenced in various studies \cite{CRPS_example_1, CRPS_example_2, CRPS_example_3}:
 
-RMSE has the same units as the dependent variable and is particularly useful when large errors are undesirable \cite{MAE_RMSE}.\par 
-
-The previously introduced error metrics are not developed to handle probabilistic forecasts, unlike the Continuous Ranked Probability Score (CRPS) developed by \cite{Loss_Function} which is perfectly suited for probabilistic forecasts. This metric is especially suited for the evaluation since for a deterministic forecast, the metric becomes the MAE. Thus deterministic and probabilistic models can be evaluated using the same metric. Further this metric can also be used as a loss function, for the transformer models as a replacement for the usual cross entropy loss, since it has been used for probabilistic weather forecasts in several papers as \cite{CRPS_example_1, CRPS_example_2, CRPS_example_3} show. \par 
-It is defined as:
 \begin{equation}\label{eq:CRPS}
     CRPS(F, x) = \int_{-\infty}^{\infty} ( F(y) - \mathcal{H}(y-x) )^{2} dy
 \end{equation}
-where $F$ is a cumulative distribution function of $X$, for example $F(y) = \mathbf{P}[X \leq y]$ with $x$ being the observation and $F$ is associated with an empirical distribution forecast. $\mathcal{H}$ is a step function along the real line that attains
+
+Here, $F$ represents the cumulative distribution function of the forecast variable $X$, and $x$ is the observed value. $F(y) = \mathbf{P}[X \leq y]$ denotes the probability that $X$ is less than or equal to $y$, and $\mathcal{H}$ is the Heaviside step function defined as:
+
 \begin{equation}
     \mathcal{H} = \begin{cases}
         1, & \mathbb{R} \geq 0 \\
@@ -299,133 +260,131 @@ where $F$ is a cumulative distribution function of $X$, for example $F(y) = \mat
     \end{cases}
 \end{equation}
 
-\subsubsection{Ressource Efficiency}
+\subsubsection{Resource Efficiency}
 
-Utilizing each of these error metrics a wider range of potential problems and areas of interest (like the penalising of outliers) can be covered. But what is scarcely being looked upon are other metrics of evaluating models besides the accuracy, this includes resource efficiency and computational requirements linked to that the time to train and an intuitive interpretation of the results. In this thesis, these measurements are playing a bigger role in evaluating models besides the accuracy. Especially resource efficiency is playing a bigger role as shown by \cite{AI_energy_consumption} and \cite{resource_awareness}. One of the problems lies in size and complexity of machine learning models which alongside the volume of data required for the training have been experiencing exponential growth, thereby demanding more computational resources. This trend has outpaced the advancements in computing hardware platforms, storage infrastructure, and networking capabilities, leading to sustainability challenges. Some papers such as \cite{Informer} have implemented some aspects to reduce the computational efficiency, but their idea was more about training time than resource efficiency. \par 
-The problem with evaluating the resource efficiency, is the lack of a proper framework and standardised measurements. It is not in the scope if this thesis to develop such frameworks, but to map the resources used to train different models on the same data and further the time spend during the whole development process on training, testing and performing inference on cloud computers is mapped, evaluated and critically viewed for improvements and saving opportunities. In order to achieve this goal, a function is running during the training, testing and evaluation process to map the CPU, RAM and GPU usage as well as the time it takes to train the model. These values are measured every 5 seconds, although this takes away resources from the models itself, the function is applied to all models and therefore the reduced capacity cancels out. In the end the values of interest are the average and peak usage to determine which models use are most cost efficient in terms of computational power used.
+Utilizing these error metrics allows for the exploration of a range of potential issues and areas of interest, such as the penalization of outliers. However, often overlooked are additional model evaluation metrics beyond accuracy, including resource efficiency and computational requirements as \cite{transformers-effectiveness} mentioned in their work. These aspects of encompassing the time to train and the intuitive interpretation of results are emphasized in this thesis, particularly the aspect of resource efficiency, as highlighted by \cite{AI_energy_consumption} and \cite{resource_awareness}. The growing size and complexity of machine learning models, along with the increasing volume of data needed for training, demand substantial computational resources. This expansion has outstripped advancements in computing hardware, storage infrastructure, and networking capabilities, leading to sustainability challenges. While some initiatives, like those discussed in \cite{Informer}, have aimed to enhance computational efficiency, their focus has primarily been on reducing training time rather than on overall resource efficiency.
+
+Evaluating resource efficiency presents challenges due to the absence of a standardized framework and measurements. Although it is beyond the scope of this thesis to develop such frameworks, this research undertakes to map the resources utilized across different models when trained on identical data sets. Additionally, the time invested throughout the development process—including training, testing, and inference on cloud computing platforms—is meticulously recorded, evaluated, and scrutinized for potential improvements and savings. To achieve this, a monitoring function operates during the training, testing, and evaluation phases to track CPU, RAM, and GPU usage, as well as the duration of model training. These metrics are recorded every second; although this monitoring consumes some resources itself, it is uniformly applied across all models, thereby normalizing the impact of its resource consumption. Ultimately, the focus is on analyzing average and peak usage metrics to determine which models are most cost-effective in terms of computational power utilization.
+
 
 \subsection{Linear Models}
 
-The linear model used in this thesis is nothing new, but is regarded as a benchmark towards the other models. To compare the more complex models to a very simple model, with the expectation that the more complex models outperform the simpler models. If that is not going to be the case or they achieve similar results, than the models are regarded as failures and are being discarded. \par 
+The linear model employed in this thesis serves as a benchmark against the more complex models. This benchmarking approach assumes that the more sophisticated models should outperform the simpler linear model. If the complex models do not exceed or at least match the performance of the linear model, they are considered inadequate for the tasks at hand and are subsequently disregarded.
 
-The linear model is based on the same starting conditions as the other models, the same lags, the same variables in a multivariate context and the same data for the train, validation and test sections. What is not being included is a layer for seasonal decomposition as well as trend cycles, since the aim is to develop models can perform reasonable well without these to increase their generalization performance. This linear Model is a Single-Layer-Perceptron as \cite{transformers-effectiveness} have used as well in their work. This holds the advantage of producing weights which can be used in the weighted mean CRPS loss function, which is used as part of the different runs as well.
-\begin{lstlisting}[language=Python, caption=Single-Layer-Perceptron]
-class LinearModel(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(LinearModel, self).__init__()
-        self.linear = nn.Linear(input_size, output_size)
+The linear model is configured under the same initial conditions as the other models; it uses the same lags, operates in a multivariate context, and accesses identical datasets for training, validation, and testing phases. It does not incorporate components for seasonal decomposition or trend analysis, focusing instead on achieving robust performance without these elements to enhance its generalizability. This approach aligns with the Single-Layer-Perceptron setup used in the study by \cite{transformers-effectiveness}, picked for its utility in generating weights for the weighted mean CRPS loss function.
 
-    def forward(self, x):
-        x = self.linear(x)
-        weights = self.linear.weight.data
-        
-        return x, weights
-\end{lstlisting}\label{code:LinearModel}
-The model consists of a single linear layer to keep this as simple as possible and achieving similar results to a linear ordinary least square regression. This model is expected to train the fastest and the least amount of resources compared to the deep learning models. Since the model works with the same batches from the data loader as the other models, the training process can be parallelised which helps with the speed of the training process. 
+To maintain simplicity, the model consists of a single linear layer, mirroring the functionality of a traditional ordinary least squares regression. This simplicity is expected to facilitate the fastest training times and the lowest resource usage among the evaluated models. Additionally, since this model processes the same batches from the data loader as the other models, its training can be efficiently parallelized, further enhancing the speed of the training process.
+
 
 \subsection{DeepLearning Models}
 
-The goal in this section is to create a distinct Transformer model for time series forecasting, not from scratch but to dissect several different published models and evaluate what each of these models did differently and if the innovative parts is beneficial to this context and data. To get an understanding of the models one has to first in what regard each one differentiates from the vanilla model and also why and how they did it. \par 
-Since the DeepLearning Models are in the centre of the research a thorough valuation of the performance of these models is conducted. With the different architectures different strategies to solve the same problem are being introduced. Therefor the results of all transformer models are compared separately in more depth, to investigate which of the architectures and strategies achieve the best performance.
+The objective of this section is to develop a tailored Transformer model for time series forecasting. This is achieved not by designing a model from scratch but by analyzing various published models to discern what unique contributions each model offers to this field. A critical evaluation is undertaken to understand how the model diverges from the traditional Transformer architecture and to assess whether these modifications yield benefits for the specific datasets used in this study.
+
+As deep learning models are central to this research, an extensive evaluation of their performance is conducted. With each model introducing a different approach to the same forecasting challenge, a detailed comparison of all Transformer models is essential. This comparison aims to determine which architectures and strategies deliver superior performance.
+
 
 \subsubsection{Vanilla Transformer}
 
-The vanilla transformer represents a version that is close to the original model presented by \cite{vanilla-transformer} that utilises the attention mechanism and is not optimised in any way to a time series forecasting role, hence it has no additional layers to perform seasonal decomposition or other methods.
-The vanilla transformer has a standard encoder-decoder structure and uses fully connected layers, hence it is expected to use the most resources as no alterations have been undertaken to lower the complexity of its calculations. The structure for this model has been taken from this \href{https://github.com/thuml/Autoformer/blob/main/models/Transformer.py}{github repository}\footnote{Link to github: https://github.com/thuml/Autoformer/blob/main/models/Transformer.py} where it is implemented using the same overarching framework to work with the same tensor sizes as other models like the Informer and the Autoformer model. For the purposes of this thesis, the components of the model have been taken from the repository and the framework that uses and runs the models has been changed to fit the structure of the self developed models with its tensor sizes among others.
+The vanilla Transformer serves as a baseline model, closely mirroring the original architecture introduced by \cite{vanilla-transformer}, which employs the attention mechanism without specific optimizations for time series forecasting. This model does not include additional layers for seasonal decomposition or other time series-specific enhancements. It retains the standard encoder-decoder structure with fully connected layers and is expected to consume significant resources due to its unmodified complexity.
+
+The implementation of this model is sourced from a GitHub repository \footnote{\url{https://github.com/thuml/Autoformer/blob/main/models/Transformer.py}}, ensuring compatibility with the tensor sizes used in other models like the Informer. For this thesis, while the fundamental transformer-specific components are adopted from the repository, modifications have been made to the framework around this model to align it with the other models.
+
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/models/VanillaTransformer.png}
     \caption{Vanilla Transformer Architecture}
     \label{fig:VanillaTransformer_architecture}
 \end{figure}
-It is not in this scope of the thesis to explain the inner workings of this transformer model here in detail, \cite{vanilla-transformer} describe their model and its parts in their paper. \par 
-But the key differences implemented in this model focus on the embeddings which are fed into the model. To work around the complex framework implemented by \cite{autoformer} in their code, the embedding function written for the eFormer model utilising the time2vec method from \cite{time2vec} is used. This holds the advantage of allowing to use the same functions across different models and keep the dimensions for all inputs and outputs the same, hence the usability and generalization of the code improves. Another aspect that is changed from the original code is the output, while \cite{autoformer} intended to use their code across different data sets and make the model as accessible for other data sets as possible, by incorporating many different options. The code used here is more streamlined and therefor less accessible for other data sets, but it is easier to maintain. 
+
+Detailed discussions on the functionalities of this Transformer model can be found in the work by \cite{vanilla-transformer}. However, alterations have been made for this thesis, particularly in the embedding techniques. The embedding function from the eFormer model, which utilizes the time2vec method as described by \cite{time2vec}, replaces the complex original embedding framework. Changes were also made to the output layer to streamline the model, these adjustment not only standardize function use across models but also enhance code generalization and maintainability in this thesis.
+
 
 \subsubsection{Informer}
 
-The Informer is a model developed by \cite{Informer} that sets itself apart by enabling multivariate instead of univariate probabilistic time series forecasting. The most distinct noticeable changes are the reduction of the computational requirements to calculate the attention mechanism and reduces the memory usage of the encoder/decoder layers. The first improvement refers to the complexity of calculation for the self-attention in the vanilla model, this can be described with the formula
+The Informer, developed by \cite{Informer}, distinguishes itself as a model capable of multivariate probabilistic time series forecasting, which contrasts with the typical univariate approaches as practiced by \cite{transformer_univariate_forecasting}. One of its most significant innovations is the reduction of computational demands associated with the attention mechanism, thus lessening memory usage in the encoder and decoder layers. This is accomplished through an improvement in the self-attention calculation complexity, typically represented by
 \begin{equation*}
     O(T^2 \cdot D)
 \end{equation*}
-where $T$ is the length of the time series and $D$ is the dimension of the hidden states. The problem here lies in $T^2$ which explodes in the case of long sequences. Therefore the authors have proposed a different method called \textit{ProbSparse} that calculates the complexity of the self-attention calculation as
+where $T$ is the length of the time series and $D$ is the dimension of the hidden states. The quadratic dependence on $T$ can become problematic for long sequences. The authors address this by introducing the ProbSparse method, which reduces complexity to
 \begin{equation*}
-    O(T \cdot log{T}) .
+    O(T \cdot \log{T}) .
 \end{equation*}
-The idea is the differentiation between 'active' and 'lazy' parts where respective dot products contribute in different magnitudes towards the attention mechanism. The 'lazy' parts with a negligible contribution are left out and only the 'active' parts are considered in the further calculations ...
+This method differentiates between 'active' and 'lazy' components of the computation, focusing on the more impactful 'active' parts and disregarding the 'lazy' ones that contribute minimally to the attention mechanism.
 
-The advantage in terms of memory bottleneck for stacking encoder and decoder layers for this method lies in the ability to use longer sequences in compared to the vanilla Transformer. Since it uses its Distilling operation, effectively reducing the input size between layers into half slices, hence it reduces the whole memory usage to ...
-    
-Another aspect that this paper utilises is the use of \textit{Probabilistic Time Embedding}. This method does not only encodes the data to vectors, but does also take into account the uncertainties associated with the given time information. This is particularly useful in contexts where the time variable plays a crucial role and its varying effect can not be mapped in a deterministic way. The idea behind this is that an embedding for a particular time step is not fixed but can be a distribution. Therefore, multiple possible embeddings could represent a single time step, capturing the inherent uncertainty or variability at that time. Hence a distribution in this context shows a set of possible vectors that could represent the embedding of a particular time series, instead of being listed as a single vector. Each vector sampled from this distribution would be a valid representation of the time series, allowing the model to capture the uncertainty associated with it. The reason why this can be useful in the context of Time Series Forecasting is due to the fact that the state of the system could be uncertain or subject to external factors not included in the model. In this cas, using a distribution over embeddings can help the model account for the corresponding uncertainty during training and inference.
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/models/Sparse_Attention_Example.png}
+    \caption{Informer: Sparse Attention}
+    \label{fig:enter-label}
+\end{figure}
+
+Moreover, the Informer manages memory constraints effectively by implementing a Distilling operation, which condenses the input size between layers by halving it, thus significantly reducing memory requirements for handling longer sequences.
+
+Another innovative feature of the Informer is the introduction of Probabilistic Time Embedding. This approach goes beyond simple vector encoding of data by accounting for uncertainties inherent in time-related information. Each time step's embedding is treated as a distribution rather than a fixed vector, allowing for multiple potential representations that capture the inherent uncertainty or variability at that moment. This probabilistic embedding is beneficial in scenarios where the time variable is crucial and its impact cannot be deterministically modeled. By accommodating a range of possible embeddings, the Informer can better handle uncertainties in system states or external factors not explicitly included in the model, enhancing the model’s robustness during both training and inference phases.
+
 
 \subsection{eFormer}
 
-The eFormer is going to be the core of this analysis, it targets to be a domain specific probabilistic transformer model that outperforms more general models like the previously introduced Informer and Autoformer models. Even though the main performance measurement is going to be the accuracy of the forecast, another relevant metric to evaluate this model is the training time and resource consumption. Since this model is aimed to be as lightweight as possible. This should be achieved by dropping the entire decoder part and only use a minimal amount of layers and fewer heads than comparable models. While not writing new layers or parts, this paper uses already published parts from papers and searches for the optimal composition and combination to achieve the set goals. \par
-The model architecture consists of the time2vec embeddings created by \cite{time2vec} with the positional encoding introduced by \cite{vanilla-transformer}, an auto-correlation mechanism by \cite{autoformer} that replaces the attention mechanism in a vanilla transformer and a sparse-attention mechanism that reduces the complexity calculation published by \cite{Informer}. The two attention modules are not used in a row after one another, but parallel where each odd and even back propagation loop runs on a different attention class. This is due to the inner workings of both attention mechanisms, since both filter out irrelevant parts and with too much filtering more information is lost than initially desired and the weights are converging towards zero too fast, leaving fewer non-zero elements in the weights than desired. Hence in the first step there are going to be four models, only one attention mechanism per model and each mechanism as a probabilistic and a deterministic variant. The probabilistic model introduces uncertainty in the very beginning and carries the respective Gaussian distributions based on the mean and the variance trough all the way, thus being computationally more expensive but with the potential of keeping more information since the variance is trained independently from the mean in case they are not correlated. The other case, what is referred to as deterministic model, only learns the mean of the distributions and the variance is only inferred after the training is completed in a separate probabilistic layer where the uncertainty is introduced to give a hint on how accurate the estimates are. Though this is a computationally cheaper option is does not provide the same degree of information regarding the uncertainty of the predictions, hence this is a less desirable variant. \par 
-The model utilises the early stopping technique to have the potential of saving resources and avoid unnecessary training time if the loss does not change significantly anymore. 
+The eFormer is positioned as the central point of this thesis, aiming to be a domain-specific probabilistic transformer model that surpasses more generalized models such as the Informer by \cite{Informer}. While forecast accuracy remains a primary performance metric, another critical aspect of evaluating the eFormer is its training time and resource consumption, reflecting its design goal to be as resource-efficient as possible. This efficiency is achieved by eliminating the decoder section and minimizing the number of layers and attention heads compared to similar models. Instead of developing new components, this model strategically integrates existing elements from prior research to find the optimal configuration for achieving its objectives.
+
+The architectural framework of the eFormer incorporates time2vec embeddings as developed by \cite{time2vec}, combined with the positional encoding techniques from \cite{vanilla-transformer}. It also includes a sparse-attention mechanism that reduces computational complexity, as proposed by \cite{Informer}.The architecture is of deterministic nature and focuses solely on learning the mean values during training. This approach, while less resource-intensive, offers limited insights into the uncertainty of the forecasts, compared to probabilistic models. To enhance efficiency further, the model utilizes the early stopping technique to conserve resources and curtail training time if there is no significant change in loss, preventing redundant computational expenditure.
+
 
 \subsubsection{Data Loader}
 
-The data loader is used to prepare the input data sets by ensuring they have the right dimensions and to prepare the batches which are later fed into the transformer model. Thus it enables parallelization and also the last steps of data engineering. At first the data is shifted $n$ time stamps which are determined in the hyperparameters by the variable \textit{look\_back} resulting in a data frame of shape $(\text{dependent variable}(look\_back + 1) + \text{independent variable}(look\_back), \text{time stamps})$, hence each row in this new data frame acts as one observation where the first value is the ground truth and the other values are lagged values of the dependent and independent variables. The dependent variables for the same time stamp as the true value have been omitted, since would enable the model to work with data from the future. After shifting the data, the data frame is split into a train, test and evaluation data set, this process includes shuffling since each row is its own time series with little connections to the other time series. If the data is split without shuffling a more coherent structure would be achieved in the separate data sets, but this is not aimed for due to long lasting trends or seasonal effects which may not be captured in its entirety in all 3 data sets, but may be over representative in only one or two data sets. One example would be the changed electricity consumption profiles during the COVID-19 pandemic, as shown in \cite{COVID_electric_consumption}.\par 
-The three data sets are then reshaped to fit with the batch size to avoid compatibility issues. Therefore the oldest $n$ time series are deleted that do not fit in the batch size, even though some time series that contain relevant information are omitted. In the context of several years of data and on average $300'000$ rows per data frame, the number of dropped time series does not seem to be significant. After converting each of the three data sets into two tensors, one with the labels and one with the features, these tensors are processed using the \textit{torch.DataLoader} function, where the data set for the training process is shuffled to add some more randomness, while the other two data sets for evaluation and testing remain unchanged. 
+The data loader plays a crucial role in preparing the input datasets for the transformer models by ensuring proper dimensionality and preparing batches of the data. This setup allows parallel processing and represents the final phase of data engineering within the model pipeline. Initially, the dataset undergoes a transformation where it is shifted by $n$ timestamps—determined by the \textit{look\_back} hyperparameter to form a new data frame with the shape 
+\begin{equation*}
+    (\text{dependent variable}(look\_back + 1) + \text{independent variable}(look\_back), \text{time stamps})
+\end{equation*}
+Each row in this data frame represents an independent observation, where the first value is the ground truth and subsequent values are the lagged instances of both dependent and independent variables. The inclusion of future values of the dependent variable at the same timestamp as the true value is deliberately avoided to prevent the model from inadvertently learning from future data, therefor no masking is needed.
+
+After the lag transformation, the data is partitioned into training, testing, and validation sets, incorporating shuffling to ensure that each split encompasses a diverse range of scenarios rather than contiguous segments, which might not fully capture long-term trends or seasonal effects in all three datasets, as only one set may hold a specific trend. An illustrative example of the importance of this method can be seen in the changed electricity consumption patterns during the COVID-19 pandemic, as discussed in \cite{COVID_electric_consumption}. To avoid such coincidences the data is shuffled before splitting, this does not effect the overall structure since every row is a full time series on its own.
+
+To ensure compatibility with the model's batch processing requirements, the three datasets are further reshaped to align with the designated batch size. This adjustment occasionally necessitates the removal of the oldest $n$ entries that do not fit the batch size configuration, which, despite resulting in the loss of some data, is generally insignificant given the large scale of the 19 datasets, typically encompassing around 300,000 rows each. The processed data is then split into separate tensors for features and labels, which are subsequently loaded into the model using the \textit{torch.DataLoader} function. Within this framework, the training data is shuffled to introduce additional randomness, while the validation and testing sets remain sequential to preserve their temporal integrity.
+
 
 \subsubsection{Embeddings \& Positional Encodings}
 
-For the embeddings of time series data \cite{time2vec} introduce in their paper a framework with the core idea to view time as a sine or cosine function, to highlight its periodical nature. They argue that it is hard for the computer to process that after 12 or 24 hours respectively the next step is 1 o'clock, hence the transformation into a mathematical periodic function. For the eFormer these properties are also going to be incorporated, with the addition of positional encoding.
-Since the aim is to create different versions of probabilistic models, two versions are created for the embeddings. On one hand the deterministic approach, that only passes along the mean values and results in a single tensor. While on the other hand the probabilistic approach also creates variance embeddings directly alongside the original time2vec calculations. But in neither case the calculated vectors are appearing in the back propagation loop of the transformer. This is due to their lack of need for uncertainty, since all the necessary information such as the time and the true values are set and do not need to be learned. \par 
+In the exploration of time series embeddings, \cite{time2vec} introduce a novel approach where time is treated as a periodic function using sine and cosine transformations. This method helps address the challenge of representing time cyclically, making it easier for models to interpret periodic patterns such as hours of the day. For the eFormer, these properties are utilized alongside positional encoding to enhance the model’s understanding of time sequence data.
 
-In order to recreate the time2vec transformation, the input tensor $\tau$ is first sinusoidal, then linearly transformed and then the results are concatenated into the embeddings. The following example of the probabilistic embeddings using the sin function, demonstrates this in more detail. Analogous this also works with cosine and deterministic embeddings.
-The sine transformation \eqref{eq:sin-tranform} is based on the \textit{torch.sin} function, where the input tensor $\tau$ is multiplied with a weight matrix $W$ and the biases are added before the sin application. Both the weights and biases consist of randomly generated values from a normal distribution with $\mathcal{N}(0,1)$.
-\begin{equation}\label{eq:sin-tranform}
-    V_1 = sin(\tau \cdot W + B)
-\end{equation}
-    
-While \eqref{eq:sin-tranform} captures the periodic time dependencies, the linear transformation exists to identify possible trends, and linear relationships in the underlying data. The variables are again the input vector $\tau$, the weights $W_0$ and the biases $B_0$, with the difference lying in the dimension, since the weights and biases are only of dimension 1.    
-\begin{equation}\label{eq:lin-tranform}
-    V_2 = \tau \cdot W_0 + B_0
-\end{equation}
+To perform the time2vec transformation, the input tensor $\tau$ undergoes a sinusoidal transformation, followed by a linear transformation, with the results concatenated to form the final embeddings:
+\begin{align}\label{eq:sin-transform}
+    V_1 &= \sin(\tau \cdot W + B) \\
+    V_2 &= \tau \cdot W_0 + B_0 \\
+    t2v(\tau) &= V_1 \oplus V_2
+\end{align}
+The sine transformation \ref{eq:sin-transform} is based on the \textit{torch.sin} function, where the input tensor $\tau$ is multiplied with a weight matrix $W$ and the biases $B$ are added before the sin application. Both the weights and biases consist of randomly generated values from a standard normal distribution with $\mathcal{N}(0,1)$. This also can be performed using the cosine instead of the sine function. While the sinusoidal transformation captures the periodic time dependencies, the linear transformation exists to identify possible trends, and linear relationships in the underlying data. The variables used in the linear transformation serve as the input vector $\tau$, the weights $W_0$ and the biases $B_0$, with a difference in the dimensionality, since the weights and biases are only of dimension 1.
 
-When the two transformations are put together using the concatenation function represented by $\oplus$ in \ref{eq:t2v-concat}, the resulting tensor has the feature length of the desired vector length for the embedding vectors. 
-\begin{equation}\label{eq:t2v-concat}
-    t2v(\tau) = V_1 \oplus V_2
-\end{equation}
-For the probabilistic version these steps are repeated twice once for the mean and once for the variance values which in return help to describe the normal distribution on which the estimates lie. The variance is initiated with a different set of variables to have different parameters for the training steps down the line, this is beneficial as it allows to learn the mean and variance independently in case they are not correlated.
-\begin{equation}\label{eq:t2v-var}
-    Variance = softplus \left(sin(\tau \cdot W + B) \oplus \tau \cdot W_0 + B_0 \right)
-\end{equation}
-The \textit{torch.softplus} function assures that there are only positive variances by applying a smooth approximation of the ReLu function. 
-
-After the creation of the embeddings, the data points are no longer marked with time stamps. This problem is apparent with the utilisation of transformer models in general since they do not account for the sequential nature of the data due to their multi-attention heads. Positional encoding is introduced to circumvent this problem. A problem specifically for the probabilistic part lies in the creation of the same encoding for the two parts of mean and variance, since they refer to the same time stamp. To tackle this issue, the data is split an then converted using the same function. Under the perspective of efficient computing this leads to opportunities for parallelization but also higher computational costs.
-
-To give each value in the time series a unique identifying value, these values have to be created first. This includes the calculation for a sine and cosine frequency respectively based on the length of the entire time series, where $d_{model}$ is the dimensionality of the embeddings and $PE(pos, i)$ represents the final positional encoding at position $pos$ and dimension $i$.
+During the generation of embeddings, the raw data points loose their time stamps, which poses a challenge for transformer models that do not inherently account for sequence order due to their multi-head attention architecture. Positional encoding is introduced to circumvent this by providing temporal context that aids in maintaining the sequence's chronological order:
 \begin{align}\label{eq:pos-encoding}
     PE(pos, 2i) &= sin \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right) \\
     PE(pos, 2i + 1) &= cos \left( \frac{pos}{(2 \cdot time \; series \; length)^{2i / d_{model}}} \right)
 \end{align}
-This method was first proposed by \cite{vanilla-transformer} with the intention to make relative positions easier to understand for the model due to the again periodic nature of the sine and cosine functions used.
+This technique, introduced by \cite{vanilla-transformer}, employs sine and cosine functions to encode positional information based on the length of the entire time series, where $d_{model}$ is the dimensionality of the embeddings and $PE(pos, i)$ represents the final positional encoding at position $pos$ and dimension $i$, facilitating the model's interpretation of relative and absolute positioning of data points within the time series.
 
-With the creation of the embeddings and the positional encoding, the two tensors are then added up to achieve the desired result.
+Finally, the embeddings and positional encodings are combined:
 \begin{equation}
-    Encoded(\tau) = t2v(\tau) + PE(pos,i)
+    Encoded(\tau) = t2v(\tau) + PE(pos, i)
 \end{equation}
-This addition is also repeated for the variance in the probabilistic case. To make it easier in future steps to access the data independently they are stored in the same tensor but in two different dimensions.
-At first it seems counter intuitive that the model can infer the positions from the embeddings when the encoding vectors have been added up with embedding vectors. However the way the attention modules handle the altered input sequences, the model can connect data points based on their temporal relative positioning, based on the additional information provided by the positional encodings.
+This method not only preserves the sequential order of the data but also allows the model to interpret and learn from the temporal data effectively.
+
 
 \subsubsection{Sparse Attention}
 
-This part replaces the vanilla attention mechanism and focuses on dropping sections from the time series that it deems not relevant enough to keep tracking. The decision about which parts are worthwhile to chase and which parts are not are determined by the model using a threshold which is set by the variables \textit{attention\_dropout} and \textit{prob\_sparse\_factor}.
+In this implementation, the sparse attention mechanism serves as a substitute for the traditional vanilla attention mechanism, focusing on excluding segments of the time series deemed not significant for model predictions. This selective attention process is enabled by set thresholds established through the \textit{attention\_dropout} and \textit{prob\_sparse\_factor} hyperparameters, enabling the model to efficiently manage the relevance of data points throughout the sequence.
 
-\begin{figure}[!ht]
+\begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/models/Sparse_Attention_Example.png}
-    \caption{Vanilla self Attention and Sparse Attention from Informer}
+    \caption{Comparison of Vanilla Self-Attention and Sparse Attention, picture taken from \cite{Informer}}
     \label{fig:sparse_attention}
 \end{figure}
 
-There is no masking in place since it is not necessary to withhold information from the decoder as none exists in its intended form. The only part that is in the decoders place is an empty vector with the time horizons that are being forecasted. These timestamps are being converted using the same positional encoding as in the embeddings part. Therefor all that is going to happen in the 'decoder' part is the continuation of predicting values for unseen timestamps.
+Unlike other transformer architectures, this model does not employ a masking strategy since there is no decoder to shield information from and each time series in a batch only consists of past values without the chance to access different time series'. Instead, an empty vector placeholder represents the future time horizons targeted for prediction. These future timestamps undergo the same positional encoding process as the embeddings, ensuring that the model's 'decoder' segment simply extends the prediction tasks to unseen future timestamps. This is achieved by utilising a recurrent forecasting method as described by \cite{recurrent_forecasting} where only one step is forecasted each iteration until the goal of a $n$-step forecast is reached.
 
-The arcitecture of the transformers utilising the sparse attention mechanism is shown in figure \ref{fig:eFormer_sparse} where both model variants are displayed. The inner workings of both models are the same for the sparse attention, the only difference lies in the application of the attention to both the mean and the variance while the other model only applies to the mean.
+The structure of the transformers using the sparse attention mechanism is depicted in Figure \ref{fig:eFormer_sparse}. This approach not only simplifies the architectural complexity but also optimizes computational efficiency by focusing processing power on data segments with the highest relevance, thereby maintaining or enhancing predictive accuracy while managing resource use effectively.
 
-\begin{figure}[!ht]
+\begin{figure}
     \hspace*{\fill}
     \begin{subfigure}[b]{0.4\linewidth}
         \includegraphics[width=\linewidth]{graphs/models/eFormer_probSparse.png}
@@ -441,175 +400,232 @@ The arcitecture of the transformers utilising the sparse attention mechanism is 
     \label{fig:eFormer_sparse}
 \end{figure}
 
-The key to reduce the computational costs is to build subsets of the key vectors $K$ by sampling for every query vector $Q$. These two vector have the dimensions $[B,H,L_K,D]$ and $[B,H,L_Q,E]$ respectively, with
+Reducing the computational overhead is accomplished by building subsets of the key vectors $K$ by sampling for each query vector $Q$. These vectors have the dimensions $[B, H, L_K, D]$ and $[B, H, L_Q, E]$ respectively which is the same as in the Informer model by \cite{Informer}, where:
 \begin{itemize}
-    \item $B$ as the batch size,
-    \item $H$ as the number of multi-attention-heads,
-    \item $L_K$ and $L_Q$ as the lengths of the query and key sequences respectively,
-    \item $D$ and $E$ as the dimensions of the query and key vectors respectively.
+    \item $B$ denotes the batch size,
+    \item $H$ represents the number of multi-head attentions,
+    \item $L_K$ and $L_Q$ are the lengths of the key and query sequences,
+    \item $D$ and $E$ are the dimensions of the key and query vectors.
 \end{itemize}
-This is achieved in the \textit{ProbAttention} class, where at first $U_{part}$ elements are being sampled with
-\begin{equation}
-    U_{part} = c \ceil*{log(L_K)}
-\end{equation}
-where $c$ is a hyperparameter, $L_K$ is the length of the key vector that is being sampled and $\ceil*{\cdot}$ is a ceiling function to ensure that $c$ is multiplied with integers as the value for $U_{part}$ can not be fractional. The logarithmic scaling is in place to prevent linear scaling with increased input size, since not every additional element is proportionally as important for the sampling to be effective. After sampling from the original $K$ using the function \textit{torch.randint} the tensor $K_{sample}$ of length $U_{part}$ the dot product is build
-\begin{equation}
-    QK^{T}_{sample} = Q \cdot K_{sample}
-\end{equation}
-with the usage of the sampled vector the first step towards reducing the computational load is achieved. This dotproduct is then used in the sparsity measurement to determine which queries have the highest potential impact on the output. This is calculated by
-\begin{equation}
-    M = max\left(QK^{T}_{sample}\right) - \frac{\sum QK^{T}_{sample}}{L_K}
-\end{equation}
-of this sparsity measurement the top $n$ values are selected, the number of $n$ is calculated similarly to the $K_{sample}$ using
-\begin{equation}
-    u = c \ceil*{log(L_Q)}
-\end{equation}
-where $c$ is the same hyperparameter as before and $L_Q$ is the length of the query vector, the same logic of utilising a logarithm is applied here too. The final step is to calculate the reduced dot product which consists of the selected queries and the full key length
-\begin{equation}
-    Q_{selected}K^{T} = Q_{selected} \cdot K
-\end{equation}
-resulting in the the desired lowered computation of $O(T log(T))$ as claimed by \cite{Informer}. \par 
 
-The next step in calculating the attention is to initialize and calculate the attention scores which is performed in the same class as the calculation of the reduced dotproduct. The initial context vectors are the averages over the value tensor $V$ with dimensions $[B,H,L_V,D]$. This can be done since as mentioned previously the masking is not important in this model as the decoder is practically non-existent and thus no future tokens have to be hidden, with the intention to reduce the computational costs further. After the initialised context vectors, they have to be updated. To do so is to use the softmax function on the previously calculated dotproduct to convert them into probabilities, but before that the attention scores are scaled to prevent to large values in the softmax to improve numerical stability. Hence the next steps are
+This is implemented in the \textit{ProbAttention} class, where the parameter $U_{part}$ describes the size of the sample and is determined by the equation:
+\begin{equation}
+    U_{part} = c \ceil*{\log(L_K)}
+\end{equation}
+Here, $c$ is a hyperparameter, $L_K$ is the length of the sampled key sequence, and $\ceil*{\cdot}$ is the ceiling function, ensuring that $U_{part}$ remains an integer. The logarithmic relationship helps maintain computational scalability by preventing the sampling complexity from increasing linearly with the input size.
+
+Sampling from the key vector $K$ is executed using the \textit{torch.randint} function, producing a tensor $K_{sample}$ of length $U_{part}$. The dot-product between $Q$ and $K_{sample}^T$ is calculated:
+\begin{equation}
+    QK^T_{sample} = Q \cdot K_{sample}
+\end{equation}
+
+This dot-product calculation is the key aspect in the reduced computational load. The result $QK^T_{sample}$ then undergoes a sparsity measurement to evaluate the potential impact of each query on the output. This measure is computed as follows:
+\begin{equation}
+    M = \max(QK^T_{sample}) - \frac{\sum^K_{i=1} QK^T_{sample}}{L_K}
+\end{equation}
+From this measurement, the top $n$ values are selected based on their potential impact, where $n$ is derived similarly to $U_{part}$:
+\begin{equation}
+    n = c \ceil*{\log(L_Q)}
+\end{equation}
+with the same logarithmic scaling applied.
+
+The final computation involves the dot-product of the selected queries with the entire key vector:
+\begin{equation}
+    Q_{selected}K^T = Q_{selected} \cdot K
+\end{equation}
+
+This selective computation significantly reduces the overall complexity to $O(T \log(T))$, aligning with the efficiency goals set forth by \cite{Informer}, and ensuring that the model remains scalable even as input lengths increase.
+
+
+The computation of attention scores is an important step in the functioning of the sparse attention mechanism and is executed within the same class that handles the reduced dot-product calculations. Initially, context vectors are derived as the mean of the value tensor $V$ with dimensions $[B,H,L_V,D]$. This simplification is possible in this model as there is no need for masking future tokens due to the absence of a traditional decoder, therefor streamlining the computation further.
+
+The following step involves updating the context vectors. This is achieved by first normalizing the attention scores calculated from the dot-product to enhance numerical stability before applying the softmax function. The scores are scaled down by the dimensionality of the heads to prevent excessively large exponents in the softmax function, which could lead to numerical instability:
+
 \begin{align}
     a_{ijk} &= a_{ijk} \frac{1}{\sqrt{D}} \\
     a_{ijk} &= \frac{e^{a_{ijk}}}{\sum^{L_K}_{k=1}e^{a_{ijk}}}
 \end{align}
-where $a_{ijk}$ represents the normalized attention weight for the $k$-th key vector when attending to the $j$-th query in the $i$-th batch for a specific head and $D$ is the dimensionality of the head. The updated context vector is then processed for each selected query index by aggregating information across the value sequence, weighted by the relevance of each value vector as determined by the attention scores.
+
+Here, $a_{ijk}$ represents the normalized attention weight for the $k$-th key vector relative to the $j$-th query within the $i$-th batch and $D$ as the dimensionality of each head. The updated context vector is further processed for each selected query index by aggregating information across the value sequence, weighted by the relevance of each value vector as determined by the computed attention scores:
 \begin{equation}
     context_{in}[:,:,index,:] = \sum^{L_K}_{k=1} a_{ijk} \cdot V_{:,:,k,:}
 \end{equation}
-For the updated context scores the normalized attention scores $a_{ijk}$ are used as weights. \par 
+The weights $a_{ijk}$ utilized in updating the context vectors are derived from the normalized attention scores, ensuring that each value's contribution is proportionate to its assessed relevance.
 
-The next class is an Attention Layer that orchestrates all the functions explained before and ensures the correct dimensions for the output tensor and thus builds the core component of the multi-head attention mechanism since this function allows for parallel computing. In detail this class contains 4 steps, where the first one is a linear projection of the query, key and value matrices to bring them to the correct dimensions to ensure computing without problems.
+The Attention Layer combines all the previously discussed functions, ensuring the output tensor is correctly dimensioned. This layer is essential in the multi-head attention mechanism, enabling parallel computation to optimize processing efficiency. The implementation involves four steps, it starts with a linear transformations of the query, key, and value matrices to align them to the appropriate dimensions for subsequent computations:
 \begin{align}
     Q' &= QW^Q \\
     K' &= KW^K \\
     V' &= VW^V
 \end{align}
-The weight matrices $W^{Q,K,V}$ come from a linear layer using the weight computations from before. After that the projections are reshaped to make parallel computing across the multi attention heads possible. The second step is the attention computation itself which utilises all the functions described in Detail before. Which results in 
+Here, $W^{Q, K, V}$ are the weight matrices derived from the linear layers, designed to prepare the inputs for parallel processing across the multiple attention heads.
+
+Next the attention scores are calculated utilizing the methodologies detailed earlier:
 \begin{equation}\label{eq:Encoder-Attention}
-    Attention(Q', K', V') = softmax \left( \frac{Q'K'^T}{\sqrt{D / H}} \right) V'
+    Attention(Q', K', V') = \text{softmax} \left( \frac{Q'K'^T}{\sqrt{D / H}} \right) V'
 \end{equation}
-Here $Q'K'^T$ calculates the dot-product attention scores, while $\sqrt{D/H}$ is the scaling factor that prevents the scores from growing too large as described before.  In the third step the results from the different are combined and mixed to take full advantage of the multi-attention head mechanism as been shown for NLP tasks by \cite{multi-head-mixing, mulit-head-mixing2}. Doing so allows the model to learns from different aspects from the same data and is able to see more perspectives allowing for a richer and more comprehensive representation of the underlying data. Further this allows for better generalization and faster convergence, since each can specialize more and then synergies their results which in turn increases training stability. The final fourth step is another linear projection to bring the Attention from equation \ref{eq:Encoder-Attention} into the desired shape before proceeding. \par 
+In this formula, $Q'K'^T$ represents the dot product forming the basis of the attention scores, while $\sqrt{D / H}$ is a scaling factor that helps maintain numerical stability by preventing excessively large values.
 
-This concludes the description of the Encoder Model for the Sparse Attention Model, the Decoder part is as stated previously as minimalistic as possible and only consists of an empty vector of positional encoding for the forecasted values and is then put through the same attention mechanism as the encoder part.
+Following the computation of attention, the results from different heads are aggregated. This mixing is essential for the model to capture various aspects of the same data, providing a richer and more detailed representation. As shown in previous studies by \cite{multi-head-mixing, mulit-head-mixing2}, this approach not only enhances data representation but also promotes better generalization and faster convergence by allowing each head to specialize and subsequently synergize their findings.
 
-The sparse Decoder Part is a customised version of a minimalist transformer decoder that is specialized into working with timer series data and the sparse attention mechanism from the encoder part. It utilises dropout to prevent overfitting and works with the ReLu activation function, while the input to this part is the output tensor from the encoder part and the newly created prositional encodings for the to be predicted values. The forward pass contains deals with positional encoding, cross-attention, a feed-forward network, layer normalization and output generation. While this seems like a lot is done in these steps, several elements have been left out for example the self-attention on the input data purely in the decoder part and the corresponding masking. The only steps that could be omitted is the feed-forward network with its two convolutional layers, except for that the other parts are mandatory in the generation of the forecasts.\par 
-The first part the positional encoding used to create the vector of forecasted values utilises the same functions as in the encoder part previously described in equation \ref{eq:pos-encoding} and thus creates a continuation in the time encoding that is easier to understand for the computer. The second part the cross-attention layer takes inputs from the decoder as well as the encoder side and thus is able to combine the relevant data. The Queries $Q$ are the positional encodings from the decoder while the keys $K$ and values $V$ are from the encoder side. These tensors are fed into the same structure as presented in the encoder part in \ref{eq:Encoder-Attention} but with altered inputs hence the equation is now
+The final step involves another linear projection to reshape the combined attention outputs from equation \ref{eq:Encoder-Attention} to the required dimensions, setting the stage for further processing or output generation.
+
+The Sparse Attention Model's Encoder has been outlined previously, focusing on streamlining operations to enhance computational efficiency. The corresponding Decoder part, in keeping with the minimalist idea, contains positional encoding for forecasted values and using cross attention to bring together the results from the attention heads in the encoder.
+
+This Decoder is a customized variant of the standard transformer decoder, specifically adapted for time series data and the sparse attention strategy employed in the encoder. It incorporates dropout to prevent overfitting and utilises the ReLu activation function. The inputs to this decoder are the encoder's output tensor and the generated positional encodings for the forecasted values. The forward pass of the decoder consists of several steps: positional encoding, cross-attention, a feed-forward network, layer normalization, and ultimately, output generation. While this sequence implies a complex process, it is streamlined by omitting elements like self-attention solely within the decoder and its associated masking. The only additional element aside from the core functions is the feed-forward network, which includes two convolutional layers.
+
+The positional encoding, identical to that used in the encoder as detailed in equation \ref{eq:pos-encoding}, ensures continuity in the time representation. The cross-attention layer processes inputs from both the decoder and the encoder. Here, the decoder's positional encodings serve as queries $Q$, while the keys $K$ and values $V$ are derived from the encoder. This integration is articulated in the modified equation:
 \begin{equation}\label{eq:Decoder-CrossAttention}
-    Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}) = softmax \left( \frac{Q_{Decoder} K_{Encoder}^T}{\sqrt{D / H}} \right) V_{Encoder}
+    Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}) = \text{softmax} \left( \frac{Q_{Decoder} K_{Encoder}^T}{\sqrt{D / H}} \right) V_{Encoder}
 \end{equation}
-as before the keys and values are sampled and thus smaller versions of the original keys and values, as previously described in the encoder part, which again makes the calculation less computational expensive. 
-The third part is a feed-forward network which through its non-linear activation function is able to capture more complex patterns in the observed data. The first convolutional layer performs a element-wise transformation using a kernel of size 1 to transform the dimensionality from the inital dimensions set in the hyperparameters $d_{model}$ to the dimension of the feed forward network's hidden layer) $d_{ff}$
+In this setup, keys and values undergo sampling again, as previously described, thus reducing the volume of data processed and maintaining computational efficiency.
+
+The feed-forward network within the decoder is crucial for capturing complex patterns in the observed data through its non-linear activation function. The network begins with a convolutional layer that performs an element-wise transformation, using a kernel of size 1. This transformation adjusts the dimensionality from the initial model dimension $d_{model}$ to that of the hidden layer of the feed-forward network $d_{ff}$:
+
+\begin{align}
+    FFN_1 &= \text{ReLU}(\text{Conv}_{\text{kernelsize} = 1}(\text{Attention}(Q_{Decoder}, K_{Encoder}, V_{Encoder}))), \\
+    FFN_2 &= \text{Conv}_{\text{kernelsize} = 1}(FFN_1)
+\end{align}
+
 \begin{align}\label{eq: decoder-ffn}
     FFN_1 &= ReLu(Conv_{kernelsize = 1}(Attention(Q_{Decoder}, K_{Encoder}, V_{Encoder}))) \\
     FFN_2 &= Conv_{kernelsize = 1}(FFN_1)
 \end{align}
-to be able to keep working with the attention outputs they are transformed back into the dimensions of $d_{model}$ using a second convolutional layer, without a activation function, since that has already been applied before. The choice for the usage of convolutional layers comes down to the benefits they provide over fully connected dense layers in traditional transformer models, which are mainly the efficiency advantages of sharing parameters and their ability to be easily parallelized, as well as the application of filters on smaller regions due to the kernel size of $1$ which provides benefits to capturing short term dependencies.
 
-The fourth step include layer normalization which ensure the model's stability and help to mitigate the vanishing gradient problem. The normalization is applied towards the normal attention output as well as the feed-forward network output
+To ensure compatibility with subsequent layers, the output from $FFN_1$ is transformed back to $d_{model}$ dimensions using a second convolutional layer, which lacks an activation function as the activation has already been applied in the first layer. The adoption of convolutional layers, rather than fully connected dense layers, offers several advantages including parameter sharing, parallelization, and application of filters on smaller regions due to the small kernel size which provides benefits to capturing short term dependencies.
+
+The next phase incorporates layer normalization to enhance the model's stability and address potential issues with vanishing gradients. This normalization is applied to both the outputs from the attention mechanism and the feed-forward network:
 \begin{align}
-    Attention(Q,K,V) &= LayerNorm(Attention(Q,K,V) + Dropout(Attention(Q,K,V)) \\
-    FFN_3 &= LayerNorm(Attention(Q,K,V) + Dropout(FFN_2))
+    \text{Attention}(Q,K,V) &= \text{LayerNorm}(\text{Attention}(Q,K,V) + \text{Dropout}(\text{Attention}(Q,K,V))), \\
+    FFN_3 &= \text{LayerNorm}(\text{Attention}(Q,K,V) + \text{Dropout}(FFN_2))
 \end{align}
-with the dropout of $0.1$, some of the neurons in the layers are deactivated to boost generalization of the model by forcing it to find new paths when previous attempts are blocked.
-In the last step the tensor from $FFN_3$ is processed into the forecasted values by using a linear layer
-\begin{equation}
-    forecast = FFN_3 W + b
-\end{equation}
-with $W, b$ being the weights and biases respectively that are used in the linear layer. After this transformation the forecast is an interpretable value that can be compared to the ground truth and thus the error can be calculated and the back propagation steps can start to update the weights.
+Here, dropout is set at $0.1$, effectively deactivating a fraction of the neurons to promote model generalization by compelling the network to explore alternative pathways during training.
 
-\subsubsection{Auto Correlation Attention}
+In the final step, the processed tensor from $FFN_3$ is transformed into the forecasted values via a linear projection:
+\begin{equation}
+    \text{forecast} = FFN_3 W + b
+\end{equation}
+where $W$ and $b$ represent the weights and biases of the linear layer, respectively. After this transformation the forecast is an interpretable value which can be compared to the ground truth, thus the error can be calculated and the back propagation steps can start to update the weights.
+
 
 \subsubsection{Loss Function}
 
-As mentioned in the description for the eFormer, a custom Loss function is implemented. The idea is to use a function that works especially well with probabilistic models but can also handle deterministic ones. The choice fell on CRPS which stands for continuous ranked probability score, since it is a more specialised version of the MAE. For deterministic models the CRPS calculates the MAE and thus deterministic and probabilistic models can be compared. In the version that is used here, it is further customised by including the weights after claculating the differences between the predicted and true values, hence some value pairs are having a greater impact on the calculation of the overall score compared to the vanilla CRPS where each value pair has the same significance on the overall loss score. The individual steps to calculate the loss are the following: at first all inputs are reshaped into the same dimensions. This affects the predictions where a singleton dimension is removed and the weights where again a singleton dimension is removed and the average over the last dimension is calculated to have all inputs as a vector of the same length as the sequence length set in the hyperparameters. The CRPS uses a cumulative distribution function (CDF), but to use this function the values in the forecast vector have to be sorted first, after that the cumulative sum of sorted forecasts can be calculated
+As outlined earlier in the description of the eFormer, a custom loss function is adopted to enhance the model's performance with both probabilistic and deterministic data. The chosen metric is the Continuous Ranked Probability Score (CRPS), which effectively extends the Mean Absolute Error (MAE) to accommodate the specific case of probabilistic forecasts. For deterministic models, CRPS simplifies to calculating the MAE, allowing for a unified approach to evaluating both types of models.
+
+In the implemented version, the CRPS is further customized to integrate weighting mechanisms that prioritize certain predictions over others, a modification from the standard CRPS where each prediction contributes equally to the overall loss:
+\begin{equation}
+    CRPS = \frac{1}{N} \sum^N_{i = 1} w_i (CDF_{forecast_i} - \mathcal{I}(f_i, t))^2
+\end{equation}
+where $w_i$ represents weights derived from the decoder, enhancing the impact of specific predictions on the loss calculation based on their respective significance.
+
+The calculation of CRPS involves several steps. Initially, all input dimensions are standardized to ensure uniformity. This includes removing singleton dimensions from the predictions and computing the mean across the last dimension of the weights to align all input vectors to the sequence length defined in the hyperparameters. The CRPS employs a cumulative distribution function (CDF), necessitating the sorting of forecast values before their cumulative sums can be computed:
 \begin{equation}
     CDF = \frac{1}{N} \sum^N_{i = 1} \mathcal{I}(f_i < f)
 \end{equation}
-with $f_i$ being the forecasted values, $N$ the total number forecasts and $\mathcal{I}$ being an indicator function approxamated by the cumulative sum over the forecasts. The indicator function $\mathcal{I}$ compares the forecasted values with the true values
+with $f_i$ as the forecasted values, $N$ as the total number of forecasts, and $\mathcal{I}$ as an indicator function approximated by the cumulative sum over the forecasts. The indicator function $\mathcal{I}$ is defined as:
 \begin{equation}
-    \mathcal{I} (f,t) = \begin{cases}
+    \mathcal{I}(f, t) = \begin{cases}
         1, & f > t \\
         0, & \text{otherwise}
     \end{cases}
 \end{equation}
-hence the final equation for the CRPS calculation is
-\begin{equation}
-    CRPS = \frac{1}{N} \sum^N_{i = 1} w_i (CDF_{forecast_i} - \mathcal{I}(f_i,t))^2
-\end{equation}
-where $w_i$ is the weight matrix from the decoder part that enables the weighted mean, the final score is therefor the weighted mean of all forecasts. The differences towards the theoretical part covered earlier lies in the indicator function where the comparison is towards the true values rather than $0$ and the usage of weights in the final calculation to put more significance on value pairs with higher weights associated.
+This function assesses whether each forecasted value exceeds the true value, integrating these comparisons into the CRPS computation.
+
+Additionally, standard loss functions like MSE and L1 Loss are also utilized, drawing from their existing use in the literature, as noted in studies like the Informer paper. These functions are implemented using the \textit{torch.nn} package, referencing the MSE and MAE error metrics previously introduced in equations \ref{eq:MSE} and \ref{eq:MAE}. These widespread metrics provide a reliable performance assessment alongside the more specialized CRPS.
+
 
 \subsection{Experiment Setup}
 
-The code for all the experiments can be found at the respective \href{https://github.com/janbesler/Masterarbeit}{github repository}.
-
-The same models are trained on different parameters, as stated in the beginning the overarching goal is to forecast for different forecast horizons. For the longer forecast horizons the look back window has to be larger to give the chance of capturing more context in the larger pool of data. To check if these larger windows have a general benefit on forecasting the shorter forecast horizons are also tested on the larger look back windows. Therefor the following setups shown in \ref{tab:forecast-lookback} can be derived for each model with different sizes for the embedding vectors. 
+The experimental setup and corresponding code for this thesis can be accessed via the \href{https://github.com/janbesler/Masterarbeit}{GitHub repository}. The experiments involve training the same models under varying parameters to assess their performance across different forecast horizons. A key variable in these experiments is the size of the look back window, which is adjusted according to the forecast horizon to capture a sufficient context from the data, as outlined in table \ref{tab:forecast-lookback}.
 
 \begin{table}[h!]
   \begin{center}
-    \begin{tabular}{c|c|c|c|c|c}
-      \toprule % <-- Toprule here
-       & \multicolumn{5}{c}{\textbf{Look Back Window}} \\
-      \textbf{Forecast} & 6h & 12h & 24h & 48h & 72h \\
-      \midrule % <-- Midrule here
-      10 min & x & x & x & x & x \\
-      1h &  & x & x & x & x \\
-      6h &  &  & x & x & x \\
-      12h &  &  &  & x & x \\
-      24h &  &  &  &  & x \\
-      \bottomrule % <-- Bottomrule here
-    \end{tabular}
     \caption{Combination of Forecast Horizon with Look Back Window Size}
+    \begin{tabular}{c|c|c|c}
+      \toprule
+       & \multicolumn{3}{c}{\textbf{Look Back Window}} \\
+      \textbf{Forecast Horizon} & 12 h & 48 h & 96 h \\
+      \midrule
+      10 min & x & & \\
+      1 h & x & & \\
+      12 h & & x & \\
+      24 h & & & x \\
+      \bottomrule
+    \end{tabular}
     \label{tab:forecast-lookback}
   \end{center}
 \end{table}
 
-All of these combinations are run for different lengths of the embedding vectors, these are namely $[32, 64, 128]$, these values have been chosen since they are all powers to the basis of two and these length are also discussed by \cite{optimal_embedding_length}. A longer embedding length correlates with fewer close matches, since the embeddings paint a more detailed picture with increasing length of the data they describe as shown in \cite{introduction_embeddings}. Therefore the sharpness of the embedding vectors increases but in practice this is not always advisable, since the close equivalents in the n-dimensional space they are compared in has fewer vectors as they spread out more. On the other side if the size for the embedding vector is chosen to small, not enough information and details are stored in the embedding vectors and too many close equivalents exist since the space contains less dimensions where the vectors could spread out to.
+The embedding lengths for the experiments are set to $[32, 64, 128]$, chosen because they are powers of two, a common practice in computational settings as discussed by \cite{optimal_embedding_length}. Longer embedding lengths typically reduce the number of close matches between data points, as they provide a more detailed representation of the data, an effect described by \cite{introduction_embeddings}. However, excessively detailed embeddings can hinder the model's ability to generalize, as they may create too much distance between the data points in the embedding space.
 
-Next to the different embedding length', several Loss functions are being implemented and tested to see if they hold any measurable differences for the task at hand. The loss functions in question are:
+Alongside varying embedding lengths, multiple loss functions are explored to ascertain any significant impact on performance. The loss functions implemented include custom CRPS, MSE, and L1 Loss, with these choices inspired by their prevalent use in existing studies such as those detailed in \cite{Informer, autoformer, cross-entropy_time-series}. The CRPS is particularly suited to probabilistic models, while MSE and L1 provide reliable benchmarks for performance comparison.
+
+The models utilized in the experiments are:
 \begin{multicols}{2}
 \begin{itemize}
-    \item custom CRPS
-    \item MSE Loss
-    \item L1 Loss
-    \item Cross-Entropy Loss
-\end{itemize}    
-\end{multicols}
-The CRPS and the L1 Loss could present similar results as the L1 Loss utilises the mean absolute error (MAE), on which also the CRPS is build. Hence with a deterministic model with non-learnable variance these two models are resulting in the same loss values. The MSE Loss is being used by \cite{Informer, autoformer} and therefor it is used here again to compare the results under similar conditions. And the Cross-Entropy Loss is used as it finds application in diverse fields including time series analysis as shown by \cite{cross-entropy_time-series}. It is not expected that one loss outperforms the others, especially not in the deterministic cases. Though for the probabilistic cases it is expected that the CRPS loss achieves better results as this function is especially designed for the usage of probabilistic forecasts. 
-
-As previously discussed the models that are used are 
-\begin{multicols}{2}
-\begin{itemize}
-    \item custom eFormer
+    \item Custom eFormer
     \item Vanilla Transformer
     \item Informer
     \item Single Layer Perceptron
 \end{itemize}
 \end{multicols}
-where the Linear Model the Single Layer Perceptron acts as the absolute benchmark to beat, while the Vanilla transformer by \cite{vanilla-transformer} is the general purpose deep learning benchmark, as this model is developed to work primarily with language data and not time series. The other two models are build to work better with time series data, therefore it is expected that both models perform better compared to the other two models in terms of accuracy as well as computational costs compared to the Vanilla Transformer, as they have special Attention Modules that decrease the cost of computation. The fastest and cheapest model to train and use is expected to be the linear model, as it only contains one linear layer.
+
+Among these, the Single Layer Perceptron serves as a baseline benchmark, while the Vanilla Transformer, typically optimized for NLP tasks as \cite{vanilla-transformer} mentioned in their paper, provides a general deep learning benchmark. The eFormer and Informer are expected to excel in terms of accuracy and computational efficiency due to their specialized attention mechanisms designed specifically for time series data. The simplest and most cost-effective model, the Single Layer Perceptron, is anticipated to be the least resource-intensive due to its minimalistic design.
+
 
 \section{Results}
 
-The results are stored for each of the aforementioned combinations as different data frames, which are then combined into a dictionary to easily access all the required information filtered by the set parameters. The Results data frames are separated into three distinct groups
-\begin{multicols}{3}
-    \begin{itemize}
-        \item Hardware Usage
-        \item Epoch duration \& Loss
-        \item Predictions \& Labels
-    \end{itemize}
+The results from each experiment are meticulously organized into distinct data frames, which are then aggregated into a dictionary to facilitate easy access based on the defined keys. These data frames are categorized into three primary groups:
+\begin{multicols}{2}
+\begin{itemize}
+    \item Hardware Usage
+    \item Epoch Duration \& Loss
+    \item Predictions \& Labels
+\end{itemize}
 \end{multicols}
-From these groups the last one is only intended for a visual presentation since the difference between the included time series is already calculated in the Validation Loss, which in turn is part of another group.
 
-The results of the hardware usage are measured every second for the CPU, RAM and GPU, therefore this is a good approximation how much maximum and average capacity the system needs for the duration of the training process. The step of measuring every second has been chosen to capture events of spikes, which in the first runs have lasted for more than a second, but not choosing an interval smaller than one second to limit the constraint this parallel process puts on the system and to keep the resulting data frame at reasonable sizes. The hardware in use is a V100 NVidia Server with 51GB of RAM, 16GB of GPU RAM and X CPU cores with a speed of X each. 
+The hardware usage metrics are recorded every second across CPU, RAM, and GPU, providing a measure of the maximum and average resource demand during the training and validation phase. This frequent measurement interval was chosen to capture transient spikes in resource usage, initially noted to exceed one second in duration during test runs. However, intervals less frequent than one second were avoided to prevent excessive system burden and to maintain manageable data set sizes. The hardware configurations include a V100 NVIDIA server with 51GB of RAM and 16GB of GPU RAM, except for the Vanilla Transformer with a forecast length of 144, where an A100 NVIDIA server with 80GB of RAM and 40GB of GPU RAM was utilized due to GPU limitations encountered with the V100.
 
-The final group the epoch duration and loss data frames capture as the name suggests the duration of one iteration of training and validation process and the validation loss calculated at the end of one such iteration. These data points are used to further enhance the estimation of the effectiveness of the models, for the duration this acts as relevant variable for the efficiency in terms of computational costs, since most services such as AWS and Lambda base their price on the time one is using their machines. On the other hand the validation loss is an indicator how effective a model is at making good predictions compared to other models and while observing the change in the validation loss, one can see how fast or slow the models converge to their final points and when they have reached their lowest point as they hit the early stopping limit. The fast convergence is a good sign as this signals that the models are potentially finishing their training faster than other models, and thus also save resources.
+The Epoch Duration \& Loss data frames capture the time taken for each training and validation cycle and the associated validation loss. These measurements are important in evaluating the models’ efficiency and effectiveness. The duration data is used in estimating computational cost efficiencies, critical for cloud computing environments like AWS or Lambda, where pricing models are time-based. The test loss on the other hand provides insights into each model's predictive accuracy. Rapid convergence is particularly favorable as it suggests that the models are not only achieving desirable accuracy but are also optimizing resource usage by minimizing necessary training time, this is approximated by the number of epochs during the training process.
+
+The third group, encompassing Predictions \& Labels, primarily serves for visual analysis, with the assessment of the time series differences between the predicted and true values as a direct comparison and a comparison of their respective distributions.
+
+The Test Loss stayed the same for the eFormer Model, and the deep learning models, the Loss function CRPS is therefor emitted from further experiments to save resources as it is not working as planned. This is shown in table \ref{tab:CRPS_convergence} where the convergence of the validation loss is shown across different models. Where the experiments have already been conducted, the information on the CRPS remains, but is it emitted in most results tables.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{CRPS Convergence}
+    \begin{tabular}{l|S|S|S}
+        \toprule
+        \textbf{Epoch} & \textbf{eFormer} & \textbf{Vanilla Transformer} & \textbf{Informer} \\
+        \midrule
+        1 & 0.249272 & 0.249270 & 0.249290 \\
+        2 & 0.249268 & 0.249268 & 0.249269 \\
+        3 & 0.249268 & 0.249268 & 0.249268 \\
+        4 & 0.249268 & 0.249268 & 0.249268 \\
+        5 & 0.249268 & 0.249268 & 0.249268 \\
+        6 & 0.249268 & 0.249268 & 0.249268 \\
+        7 & 0.249268 & 0.249268 & 0.249268 \\
+        8 & 0.249268 & 0.249268 & 0.249268 \\
+        9 & 0.249268 &  & 0.249268 \\
+        10 & 0.249268 &  & 0.249268 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:CRPS_convergence}
+\end{table}
+
+Another setback are the missing values for the Informer model for the forecast horizons of $72$ and $144$, since the calculations took so long that the system aborted several times after 36 hours of running. 
 
 \subsection{Hardware Usage}
 
-For the Hardware Decision it is most useful to know the maximum values one training process can reach, as this is one of the determent factors to decide which hardware specifications to use. The other variable that is regarded as relevant is the average usage, as this can help to estimate the power consumption of the servers or computers used. The table \ref{tab:linear_hardware} only contains four results, since it works independent of the embedding size. The spikes in the maximum usage versus the average usage is coming down to the initialisation of the data loader, since this is not pushed to the GPU but computed in the CPU. The RAM spike across all models and Loss functions can be explained by the size of the data frame, it contains more than 5.5 million data points which are transformed into an equivalent number of time series which in turn uses up a lot of memory to handle all these pandas series and data frames simultaneously in the data loader. After this bottleneck the RAM spikes never occur again in such magnitude. Therefor servers should be equipped with more than three times the RAM capacity of the average usage to be able to handle the data loader. \par 
-The GPU usage is similar for the average and the maximum usage, meaning there is no need to additional capacity, the training process could be increased speed wise, since the maximum capacity of the used V100 servers lies at ten gigabytes. But with the current hyperparameters of a batch size of 512 the remaining capacity is substantial, for the sake of comparison it is kept at the same batch size to have equal parameters across all models. 
+In determining the appropriate hardware for training, it is essential to consider the maximum resource usage observed during the training processes. This maximum usage is a critical factor in selecting hardware specifications. Additionally, average usage metrics are crucial for estimating the power consumption of the servers employed. The observed spikes in RAM usage, detailed in the tables \ref{tab:vanillatransformer_hardware_f6}, \ref{tab:informer_hardware_f6}, and \ref{tab:eformer_hardware_f6}, are attributed to the substantial memory demands of handling over 5.5 million data points converted into time series. These initial spikes do not occur again with the same intensity after the data loader phase, suggesting that servers should be equipped with at least three times the average RAM capacity to efficiently manage peak loads during data loading. Regarding GPU usage, the average and maximum metrics are similar, indicating that there is no need for a buffer in GPU capacity for most of the training processes. With the batch size set at 512, the V100 servers employed are not fully utilized, opening the possibility to increase the training speed without additional GPU capacity.
+
+CPU usage varies across models, but only in three instances, noted in tables \ref{tab:vanillatransformer_hardware_f6} and \ref{tab:vanillatransformer_hardware_emb64}, does the CPU reach its capacity limits, suggesting that CPU capacity is generally adequate for the tasks assigned.
+
+An interesting observation is the increase in RAM usage with longer forecasting horizons across all models except the Informer, where RAM usage remains stable. This stability could indicate a more efficient data processing approach within the Informer model. For GPU usage, there is an expected increase with longer forecasting horizons due to larger matrices, although the difference between 1-step to 6-step forecasting is negligible. Specifically, the Vanilla Transformer shows a significant increase in GPU usage for longer horizons, whereas the eFormer model maintains consistent GPU usage across different loss functions, with only a moderate increase observed under the MSE Loss function for increasing forecast horizons until it reaches the similar values to the L1 Loss.
+
+Overall, the MSE Loss function appears to require less or at most equal GPU resources compared to the L1 Loss function across all models and hyperparameters, while CPU and RAM usages remain comparable. This suggests that MSE Loss is generally less GPU-intensive, offering a potentially more resource-efficient option for model training.
 
 \begin{table}
     \footnotesize
@@ -668,7 +684,7 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
 \begin{table}
     \footnotesize
     \centering
-    \caption{VanillaTransformer Model Hardware Results for Forecast = 6}
+    \caption{Vanilla Transformer Model Hardware Results for Forecast = 6}
     \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Embedding} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
@@ -712,7 +728,7 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
 \begin{table}
     \footnotesize
     \centering
-    \caption{eFormer Model Hardware Results}
+    \caption{eFormer Model Hardware Results for Embedding Length = 32}
     \begin{tabular}{l|l|S|S|S|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
@@ -734,9 +750,125 @@ The GPU usage is similar for the average and the maximum usage, meaning there is
     \label{tab:eformer_hardware_emb32}
 \end{table}
 
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Vanilla Transformer Model Hardware Results for Embedding Length = 64}
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Horizon} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
+        \midrule
+            MSE & 1 & 55.3 & 7.984 & 1.2461 & 40.5018 & 7.8214 & 1.2361 \\
+        L1 & 1 & 55.9 & 7.9927 & 1.2266 & 41.3934 & 7.6841 & 1.2159 \\
+        \midrule
+        MSE & 6 & 100.0 & 13.8154 & 1.6738 & 39.0918 & 13.7285 & 1.6702 \\
+        L1 & 6 & 57.8 & 13.9122 & 1.7559 & 40.6907 & 13.8335 & 1.7559 \\
+        \midrule
+        MSE & 72 & 46.4 & 25.6865 & 8.4238 & 34.6175 & 25.4129 & 8.3535 \\
+        L1 & 72 & 45.6 & 25.8341 & 9.6914 & 34.2474 & 25.5236 & 9.691 \\
+        \midrule
+        MSE & 144 & 23.7 & 47.3226 & 31.6748 & 14.1167 & 47.0514 & 31.3663 \\
+        L1 & 144 & 21.3 & 46.8888 & 29.0635 & 14.0558 & 46.4351 & 28.5396 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:vanillatransformer_hardware_emb64}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Informer Model Hardware Results for Embedding Length = 32}
+    \begin{tabular}{l|l|S|S|S|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \multicolumn{3}{c|}{\textbf{max Usage}} & \multicolumn{3}{c}{\textbf{avg Usage}} \\
+        \textbf{Function} & \textbf{Horizon} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} & \text{CPU (\%)} & \text{RAM (GB)} & \text{GPU (GB)} \\
+        \midrule
+            MSE & 1 & 48.7 & 8.0675 & 0.7715 & 38.7308 & 7.7877 & 0.7692 \\
+        L1 & 1 & 56.8 & 14.1718 & 1.1055 & 38.6073 & 13.9143 & 1.1034 \\
+        \midrule
+        MSE & 6 & 48.7 & 8.3904 & 0.8516 & 38.0275 & 8.3208 & 0.8516 \\
+        L1 & 6 & 53.7 & 8.4872 & 1.4902 & 38.9235 & 8.3968 & 1.4902 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:informer_hardware_emb32}
+\end{table}
+
 \subsection{Epoch Duration \& Loss}
 
-Another data frame of results that is being evaluated is the epoch duration, thus the total training time and the corresponding loss for each epoch. Generally speaking the smaller the epoch duration and the epoch number the better in terms of resource efficiency. For the loss function a fast conversion towards the minimum is desirable, even though the size of each step is determined by the hyperparameter learning rate which is fix at $6^{-4}$, by chance of the starting point a fast conversion is possible. 
+The analysis of epoch duration, including both training time and corresponding loss for each epoch, offers insights into the resource efficiency of the training process. Optimally, shorter epochs and fewer total epochs indicate higher resource efficiency. The convergence rate towards the minimal loss value is a critical factor, heavily influenced by the \textit{learning\_rate}, set at $6^{-4}$.
+
+Different embedding lengths are evaluated to determine their impact on the model's performance, with a particular focus on recurrent forecasting as mentioned before. Results from the eFormer and Informer models, as shown in tables \ref{tab:eformer_training_f6} and \ref{tab:informer_training_f6}, suggest that an embedding length of $32$ yields the most accurate outcomes with the lowest error rates. Data from table \ref{tab:vanillatransformer_training_f6} indicates that for the Vanilla Transformer, an embedding length of $64$ is optimal. These findings highlight the need to tailor the embedding length to the specific model.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{eFormer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Embedding} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Length} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+            CRPS & 32 & 9 & 35.4183 & 236.1222 & 0.24926 \\
+        MSE & 32 & 12 & 50.4342 & 252.171 & 814856.159313 \\
+        L1 & 32 & 11 & 43.2423 & 235.8672 & 698.817171 \\
+        \midrule
+        CRPS & 64 & 23 & 97.0196 & 253.0946 & 0.24926 \\
+        MSE & 64 & 18 & 79.0996 & 263.6654 & 841062.463866 \\
+        L1 & 64 & 13 & 54.6072 & 252.0331 & 703.261532 \\
+        \midrule
+        CRPS & 128 & 19 & 107.4323 & 339.26 & 0.24926 \\
+        MSE & 128 & 24 & 134.8271 & 337.0678 & 825660.56904 \\
+        L1 & 128 & 18 & 99.901 & 333.0033 & 710.622352 \\
+      \bottomrule
+    \end{tabular}
+    \label{tab:eformer_training_f6}
+    \end{table}
+
+\begin{table}
+    \centering
+    \footnotesize
+    \caption{Vanilla Transformer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+        MSE & 32 & 28 & 102.9003 & 220.5007 & 806905.5154 \\
+        L1 & 32 & 12 & 44.0136 & 220.0678 & 694.5086 \\
+        \midrule
+        MSE & 64 & 25 & 103.4476 & 248.2743 & 792598.0144 \\
+        L1 & 64 & 10 & 38.5731 & 231.4385 & 703.7991 \\
+        \midrule
+        MSE & 128 & 21 & 84.5759 & 241.6454 & 809573.6123 \\
+        L1 & 128 & 16 & 64.2135 & 240.8007 & 700.3386 \\
+      \bottomrule
+    \end{tabular}
+    \label{tab:vanillatransformer_training_f6}
+    \end{table}
+
+\begin{table}
+    \centering
+    \caption{Informer Model Training Results for Forecast = 6}
+    \begin{tabular}{l|l|r|S|S|S}
+        \toprule
+        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
+        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \midrule
+        MSE & 32 & 11 & 105.8341 & 577.2772 & 805348.1503 \\
+        L1 & 32 & 12 & 109.3351 & 546.6756 & 695.1579 \\
+        \midrule
+        MSE & 64 & 11 & 85.6144 & 466.9875 & 832401.4625 \\
+        L1 & 64 & 10 & 91.6458 & 549.8746 & 707.4773 \\
+        \midrule
+        MSE & 128 & 12 & 112.1187 & 560.5934 & 859436.3235 \\
+        L1 & 128 & 11 & 102.4461 & 558.7969 & 707.1238 \\
+      \bottomrule
+    \end{tabular}
+    \label{tab:informer_training_f6}
+    \end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{table}
     \footnotesize
@@ -767,63 +899,16 @@ Another data frame of results that is being evaluated is the epoch duration, thu
     \label{tab:linear_epoch}
 \end{table}
 
-For the Linear Model it took a similar amount of epochs to train as for the eFormer Model, but the training time is vastly improved. This is due to the single layer that is implemented in the Linear Model against the attention modules in the eFormer with its more complex structure. Thus from this point one can conclude that the Linear Model is the better Model in terms of resource consumption during the training process, not only regarding the hardware usage as discussed before, but also the training duration. 
+The absence of embeddings in the Linear Model conserves computational resources and time in deciding the optimal parameters for the forecasting task. For 1-step ahead forecasting, the MSE Loss emerges as the fastest and most resource-efficient, whereas for longer forecasts, the L1 Loss is the better choice by requiring fewer epochs and having the shortest average epoch durations. With a patience setting of 7 for early stopping, the L1 Loss achieves a local minimum in the training for forecast horizons of 72 and 144 after only three epochs, enabling rapid retraining cycles.
+
+Interestingly, the number of epochs required is generally lower for the L1 Loss compared to the CRPS and MSE losses, with the exception of the 1-step forecast scenario. Given that the total training time and resource consumption are lower with the L1 Loss, it is identified as the more resource-efficient loss function for future applications. However, while training times increase with longer forecast horizons, the average epoch durations for 1-step and 6-step forecasts are comparable, with significant increases only observed for the 72-step and 144-step forecasts. This escalation can be attributed to the expanded sequence length in training, which enlarges the weight matrices.
+
+Contrary to expectations, the Test Loss remains consistent across different forecast horizons, challenging the initial hypothesis that error would escalate with longer forecasts due to cumulative variances in the recurrent forecasting approach. This observation suggests that the forecast horizon, as investigated in these experiments, does not significantly impact model accuracy, indicating uniform performance across different lengths. Although the average epoch duration increases with longer forecasts, the number of epochs remains consistent across all scenarios. This can be attributed to the increased sequence length during the training process as the weight matrices become larger. Notably, the average epoch duration for the Linear Model is less than half that of the other deep learning models, highlighting its efficiency. Despite these findings, there is no definitive preference for a specific loss function for the Linear Model, suggesting that the choice may depend on specific use case requirements or further experimental insights.
 
 \begin{table}
     \footnotesize
     \centering
-    \caption{eFormer Model Training Results for Forecast = 6}
-    \begin{tabular}{l|l|r|S|S|S}
-        \toprule
-        \textbf{Loss} & \textbf{Embedding} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
-        \textbf{Function} & \textbf{Length} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
-        \midrule
-            CRPS & 32 & 9 & 35.4183 & 236.1222 & 0.24926 \\
-        MSE & 32 & 12 & 50.4342 & 252.171 & 814856.159313 \\
-        L1 & 32 & 11 & 43.2423 & 235.8672 & 698.817171 \\
-        \midrule
-        CRPS & 64 & 23 & 97.0196 & 253.0946 & 0.24926 \\
-        MSE & 64 & 18 & 79.0996 & 263.6654 & 841062.463866 \\
-        L1 & 64 & 13 & 54.6072 & 252.0331 & 703.261532 \\
-        \midrule
-        CRPS & 128 & 19 & 107.4323 & 339.26 & 0.24926 \\
-        MSE & 128 & 24 & 134.8271 & 337.0678 & 825660.56904 \\
-        L1 & 128 & 18 & 99.901 & 333.0033 & 710.622352 \\
-      \bottomrule
-    \end{tabular}
-    \label{tab:eformer_training_f6}
-    \end{table}
-
-The table \ref{tab:eformer_training_f6} shows that the test loss for the embedding length of $32$ is the lowest for the MSE and L1 Loss, and for the CRPS it stays the same across the different embedding lengths. Furthermore the average epoch duration is shorter as well as the total training time. Also table \ref{tab:eformer_hardware_f6} shows that the resources consumed during the training process do not differ across the embedding lengths but only across the loss functions. \par 
-Hence it can be concluded that the embedding length of $32$ is best choice for a resource efficient model, and this embedding length will be further used in the other experiments for different forecast horizons. Since the Test Loss stayed the same for the eFormer Model, and the validation loss stayed the same as well across different validation losses, the Loss function CRPS is therefor emitted from further experiments to save resources as it is not working as planned. This is shown in table \ref{tab:CRPS_convergence} where the convergence of the validation loss is shown across different models.
-
-\begin{table}
-    \footnotesize
-    \centering
-    \caption{CRPS Convergence}
-    \begin{tabular}{l|S|S|S}
-        \toprule
-        \textbf{Epoch} & \textbf{eFormer} & \textbf{Vanilla Transformer} & \textbf{Informer} \\
-        \midrule
-        1 & 0.249272 & 0.249270 & 0.249290 \\
-        2 & 0.249268 & 0.249268 & 0.249269 \\
-        3 & 0.249268 & 0.249268 & 0.249268 \\
-        4 & 0.249268 & 0.249268 & 0.249268 \\
-        5 & 0.249268 & 0.249268 & 0.249268 \\
-        6 & 0.249268 & 0.249268 & 0.249268 \\
-        7 & 0.249268 & 0.249268 & 0.249268 \\
-        8 & 0.249268 & 0.249268 & 0.249268 \\
-        9 & 0.249268 &  & 0.249268 \\
-        10 & 0.249268 &  & 0.249268 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:CRPS_convergence}
-\end{table}
-
-\begin{table}
-    \footnotesize
-    \centering
-    \caption{eFormer Model Epoch Results}
+    \caption{eFormer Model Epoch Results for Embedding Length = 32}
     \begin{tabular}{l|l|r|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
@@ -842,113 +927,130 @@ Hence it can be concluded that the embedding length of $32$ is best choice for a
         L1 & 144 & 13 & 163.555 & 754.8694 & 702.4061 \\
     \bottomrule
     \end{tabular}
-    \label{tab:eformer_epoch}
+    \label{tab:eformer_epoch_emb32}
 \end{table}
 
-For the training of the eFormer Model, that for the more complex Loss functions the number of epochs and consequently the training time is significantly higher. But what can be observed is the homogeneous avg times for the models respectively, as expected the average Epoch duration for the Linear Model is smaller than the deep learning models. For the eFormer it is less than half the training time. 
+The eFormer model demonstrates consistent efficiency across all forecast horizons, maintaining a relatively stable number of epochs and test loss similar to those observed with the Vanilla Transformer. However, unlike the Vanilla Transformer, the eFormer does not exhibit significant increases in average epoch durations with extended forecast horizons. When comparing the two loss functions, no distinct advantage emerges in terms of total training time. However, hardware utilization metrics reveal that the MSE loss is more favorable due to lower GPU usage for shorter forecasts, while for longer forecasts, the choice between MSE and L1 Loss shows negligible difference.
+
+In the case of the Vanilla Transformer, it consistently performs faster under the L1 Loss across various forecasting horizons, except for the 1-step forecast where the difference is minimal, amounting to only two additional epochs and approximately six minutes longer in the training and validation phases. Unlike the linear model, the average epoch duration for the Vanilla Transformer is not uniform across shorter and longer forecasts and escalates significantly as the forecast horizon extends. This increase is partly due to larger data matrices and more complex internal calculations compared to the simpler architecture of the linear model. Despite this, the average epoch duration remains longer than that of the eFormer, yet the Test Loss remains consistent across models, reinforcing the recommendation of using L1 Loss with an embedding length of 64 for the Vanilla Transformer across different forecast lengths.
+
+For the Informer model across two forecast horizons, the MSE loss function shows a lower average epoch duration than the other deep learning models, yet it is still over double the duration. Although the number of epochs required by the Informer is comparatively lower, the extended average training duration results in overall longer training times than anticipated.
 
 \begin{table}
-    \centering
     \footnotesize
-    \caption{Vanilla Transformer Model Training Results for Forecast = 6}
+    \centering
+    \caption{Vanilla Transformer Model Epoch Results for Embedding Length = 64}
     \begin{tabular}{l|l|r|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
         \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
         \midrule
-        MSE & 32 & 28 & 102.9003 & 220.5007 & 806905.5154 \\
-        L1 & 32 & 12 & 44.0136 & 220.0678 & 694.5086 \\
+            MSE & 1 & 17 & 65.8563 & 232.434 & 789797.9677 \\
+        L1 & 1 & 15 & 56.0951 & 224.3803 & 705.5882 \\
         \midrule
-        MSE & 64 & 25 & 103.4476 & 248.2743 & 792598.0144 \\
-        L1 & 64 & 33 & 125.9821 & 229.0584 & N/A \\
+        MSE & 6 & 35 & 134.7252 & 230.9575 & 801950.2027 \\
+        L1 & 6 & 10 & 38.5731 & 231.4385 & 703.7991 \\
         \midrule
-        MSE & 128 & 21 & 84.5759 & 241.6454 & 809573.6123 \\
-        L1 & 128 & 16 & 64.2135 & 240.8007 & 700.3386 \\
-      \bottomrule
-    \end{tabular}
-    \label{tab:vanillatransformer_training_f6}
-    \end{table}
-
-For the Vanilla Transformer, the embedding size of $64$ has the lowest losses for the 
-
-\begin{table}
-    \footnotesize
-    \centering
-    \caption{VanillaTransformer Model Epoch Results}
-    \begin{tabular}{l|l|r|S|S|S}
-        \toprule
-        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
-        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        MSE & 72 & 12 & 102.2599 & 511.2996 & 774789.8979 \\
+        L1 & 72 & 13 & 108.3705 & 500.1715 & 688.5618 \\
         \midrule
-        MSE & 1 & 16 & 59.2444 & 222.1666 & 813.2103 \\
-        L1 & 1 & 18 & 65.6114 & 218.7045 & 17.427 \\
-        \midrule
-        MSE & 6 & 25 & 103.4476 & 248.2743 & 25192.7359 \\
-        L1 & 6 & 12 & 48.1177 & 240.5886 & 97.3959 \\
-        \midrule
-        MSE & 72 & 34 & 295.9651 & 522.2914 & 25084.026 \\
-        L1 & 72 & 12 & 104.8477 & 524.2387 & 97.7682 \\
-        \midrule
-        MSE & 144 &  &  &  &  \\
-        L1 & 144 &  &  &  &  \\
+        MSE & 144 & 29 & 432.2416 & 894.293 & 826039.3856 \\
+        L1 & 144 & 17 & 250.1694 & 882.9508 & 705.1763 \\
     \bottomrule
     \end{tabular}
-    \label{tab:vanillatransformer_epoch}
+    \label{tab:vanillatransformer_epoch_emb64}
 \end{table}
 
 \begin{table}
+    \footnotesize
     \centering
-    \caption{Informer Model Training Results for Forecast = 6}
+    \caption{Informer Model Epoch Results for Embedding Length = 32}
     \begin{tabular}{l|l|r|S|S|S}
         \toprule
         \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
         \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
         \midrule
-        MSE & 32 & 11 & 105.8341 & 577.2772 & 805348.1503 \\
-        L1 & 32 & 12 & 109.3351 & 546.6756 & 695.1579 \\
+            MSE & 1 & 14 & 132.2481 & 566.7774 & 809316.4471 \\
+        L1 & 1 & 12 & 121.2891 & 606.4455 & 706.7341 \\
         \midrule
-        MSE & 64 & 11 & 85.6144 & 466.9875 & 832401.4625 \\
-        L1 & 64 & 10 & 91.6458 & 549.8746 & 707.4773 \\
-        \midrule
-        MSE & 128 & 12 & 112.1187 & 560.5934 & 859436.3235 \\
-        L1 & 128 & 11 & 102.4461 & 558.7969 & 707.1238 \\
-      \bottomrule
+        MSE & 6 & 10 & 75.4755 & 452.8528 & 829767.7887 \\
+        L1 & 6 & 12 & 109.3351 & 546.6756 & 695.1579 \\
+    \bottomrule
     \end{tabular}
-    \label{tab:informer_training_f6}
-    \end{table}
+    \label{tab:informer_epoch_emb32}
+\end{table}
+
+In determining the optimal model for each forecast horizon, critical variables such as average epoch duration, average GPU and RAM usage, and Test Loss were considered. Given the two loss functions available, the L1 Loss was selected for all scenarios based on its superior performance in the Linear Model and Vanilla Transformer, and its comparable results in the eFormer. The Informer model, which showed some preference for the MSE loss, is thus placed at a slight disadvantage. As noted, the last two cases for the Informer are omitted in Table \ref{tab:overall_comparison} due to excessively long run times.
+
+The results confirm that the Linear Model is the quickest to train across all forecast horizons, up to six times faster than the deep learning models. RAM usage is comparable across models, except for the Informer and Vanilla Transformer, which consume more RAM in short-term forecasts. In long-term forecasts, RAM usage scales similarly for all models, indicative of a direct correlation with the size of the dataset after the lags. The eFormer exhibits the highest GPU usage for short-term forecasts but maintains consistent usage even for longer horizons, offering an advantage over the Vanilla Transformer. Conversely, the Linear Model consistently shows significantly lower GPU usage.
+
+Test loss evaluations reveal that no model consistently outperforms the others across all forecast lengths. For the 1-step forecast, the eFormer achieves the lowest Test Loss, suggesting higher accuracy, while for the 6-step forecast, the Informer excels. The Vanilla Transformer attains the lowest loss at the 72-step forecast, with the eFormer performing least favorably as it already did with the 6-step forecast. In the 144-step forecast, the eFormer slightly outperforms the Linear and Vanilla Transformer models, which display nearly identical scores.
+
+Despite never achieving the lowest loss, the Linear Model stands out for its speed and minimal resource consumption, making it the most efficient model overall. While the deep learning models offer higher accuracy, this comes at the cost of increased GPU usage and longer epoch duration. The eFormer, Informer, and Vanilla Transformer each excel in different scenarios, highlighting the absence of a universally superior model among them.
+
 
 \begin{table}
     \footnotesize
     \centering
-    \caption{Informer Model Epoch Results}
-    \begin{tabular}{l|l|r|S|S|S}
+    \caption{Overall Comparison for each forecast horizon}
+    \begin{tabular}{l|l|S|S|S|S}
         \toprule
-        \textbf{Loss} & \textbf{Forecast} & \textbf{Epochs} & \textbf{Training} & \textbf{Avg Epoch} & \textbf{Test Loss} \\
-        \textbf{Function} & \textbf{Horizon} & & \textbf{Time (min)} & \textbf{Duration (s)} & \\
+        \textbf{Forecast} & \textbf{Model} & \textbf{Avg Epoch} & \textbf{Avg RAM (GB)} & \textbf{Avg GPU (GB)} & \textbf{Test Loss} \\
+        \textbf{Horizon} & & \textbf{Duration (s)} & & & \\
         \midrule
-            CRPS & 1 &  &  &  &  \\
-        MSE & 1 &  &  &  &  \\
-        L1 & 1 &  &  &  &  \\
+        1 & Linear & 111.4196 & 8.1863 & 0.416 & 706.8088 \\
+         & eFormer & 258.9076 & 8.3481 & 3.3789 & 694.003 \\
+         & Transformer & 224.3803 & 7.6841 & 1.2159 & 705.5882 \\
+         & Informer & 606.4455 & 13.9143 & 1.1034 & 706.7341 \\
         \midrule
-        CRPS & 6 & 22 & 180.4892 & 492.2433 & 0.2493 \\
-        MSE & 6 & 14 & 141.3269 & 605.6866 & 25280.4381 \\
-        L1 & 6 & 15 & 144.3216 & 577.2864 & 95.5785 \\
+        6 & Linear & 107.8403 & 8.2895 & 0.416 & 707.828 \\
+         & eFormer & 251.8938 & 8.3514 & 3.3789 & 711.0292 \\
+         & Transformer & 231.4385 & 13.8335 & 1.7559 & 703.7991 \\
+         & Informer & 546.6756 & 8.3968 & 1.4902 & 695.1579 \\
         \midrule
-        CRPS & 72 &  &  &  &  \\
-        MSE & 72 &  &  &  &  \\
-        L1 & 72 &  &  &  &  \\
+        72 & Linear & 147.6955 & 24.9946 & 0.416 & 705.6111 \\
+         & eFormer & 420.5778 & 25.9123 & 3.3789 & 712.7202 \\
+         & Transformer & 500.1715 & 25.5236 & 9.6910 & 688.5618 \\
+         & Informer &  &  &  &  \\
         \midrule
-        CRPS & 144 &  &  &  &  \\
-        MSE & 144 &  &  &  &  \\
-        L1 & 144 &  &  &  &  \\
+        144 & Linear & 213.8218 & 44.9186 & 0.416 & 705.3632 \\
+         & eFormer & 754.8694 & 46.6185 & 3.3789 & 702.4061 \\
+         & Transformer & 882.9508 & 46.4351 & 28.5396 & 705.1763 \\
+         & Informer &  &  &  &  \\
     \bottomrule
     \end{tabular}
-    \label{tab:informer_epoch}
+    \label{tab:overall_comparison}
+\end{table}
+
+For the entire training duration of all models with which estimate the financial cost can be estimated is only a rough estimate, as the time of the failed runs have not been captured but which could be attributed at $30 \%$ on top of the total training time. Each model has been trained on average twice, thus resulting in the following training times and associated costs if all models were trained on an AWS V100 server, which costs $3.06 \$/h$. The high duration for the Informer is influenced by the retries of the 72-step forecasts which took over 36 hours each and thus the entire duration for this model is going up sharply.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Total Training and associated cost}
+    \begin{tabular}{l|S|S}
+        \toprule
+        \textbf{Model} & \textbf{Training} & \textbf{Total} \\
+         & \textbf{Time (h)} & \textbf{Cost in \$} \\
+        \midrule
+        linear & 17.593 & 53.8356 \\
+        eFormer & 61.576 & 188.42256 \\
+        Transformer & 70.373 & 215.34138 \\
+        Informer & 232.57 & 711.6642 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:total_training_cost}
 \end{table}
 
 \subsection{Predictions vs Labels}
 
-To investigate if a Model has been effective in predicting the values, on one hand the validation loss during training is stored and on the other side the predictions and labels from the last epoch are stored to visualize them for eyeballing and comparing the ground truth to its forecasts visually. To get a sense of how the forecasts are comparing to the ground truth, the values are also plotted as a distribution to see how well the original values have been matched or if the model discovered some alternate ways of creating accurate predictions. 
+To showcase the effectiveness of the models in predicting values, the predictions alongside the labels from the test phase have been saved for visual comparison. Additionally, the predictions are visualized as distributions to evaluate the accuracy of the models in replicating the original value distributions and to identify possible alternative patterns the models may have learned.
+
+The plot \ref{fig:Linear_f1} illustrates that the CRPS loss function results in suboptimal forecasts, with predicted values consistently near zero throughout the observed time horizon. This observation is supported by density plots, where the distribution of predictions under CRPS is centered around zero, lacking the variability seen in the actual data. In contrast, both MSE and L1 Loss demonstrate robust performance, producing forecasts that closely match the ground truth distribution. This suggests that MSE and L1 Loss are preferable for the Linear model with a 1-step forecast horizon, raising concerns about the suitability of CRPS for this particular scenario.
+
+For the eFormer model, depicted in figure \ref{fig:eFormer_f144_emb32}, density estimations indicate a tendency to overpredict and underpredict depending on the respective loss function at the tails of the output range. The line plot reveals accurate timing of production increases but a consistent failure to capture peak values. This pattern underscores the strengths and limitations of the model's predictive capabilities. The MSE and L1 Loss functions again show similar performance levels, confirming their reliability across different model architectures.
+
+Comparative analysis of the Vanilla Transformer and the Informer models reveals consistent trends across varying forecast horizons. While these models effectively capture median values and transitional phases in the data, their performance deteriorates at predicting the tails. The precision of forecasts generally improves with shorter forecast horizons, aligning with the expectations about model sensitivity to input data range and duration.
 
 \begin{figure}
     \centering
@@ -957,17 +1059,12 @@ To investigate if a Model has been effective in predicting the values, on one ha
     \label{fig:Linear_f1}
 \end{figure}
 
-The plot \ref{fig:Linear_f1} shows that the loss functions CRPS and Cross Entropy Loss result in bad forecasts, since the values for these functions stays at near zero for the entire observed time horizon. This is further supported by the densities, where the values of these two functions center solely around the mark of zero and show no real distribution like patterns. On the other hand the MSE and L1 Loss perform well with accurate predictions and also showing an almost identical distribution to the ground truth values. Hence one can conclude that the MSE and L1 Loss are good choices for the Linear case with a forecast horizon of 10 minutes. But with the difference in the results for the L1 and CRPS Loss, a claim done before has to be disputed. Earlier it was said that for a deterministic case - which is true in this instance - the L1 Loss and CRPS would result in the same values, since they both show the MAE loss described in the equation \ref{eq:MAE}. Hence it is possible that a mistake has been made in the implementation of the CRPS function as a custom pytorch loss function. \par 
-For the eFormer predictions in the case for the 10 minutes forecast using an embedding length of 64 the results look worse than the linear model.
-
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/results/eFormer_model_analysis.png}
-    \caption{eFormer - 1 step forecast}
-    \label{fig:eFormer_f1_emb64}
+    \caption{eFormer - 144-step forecast}
+    \label{fig:eFormer_f144_emb32}
 \end{figure}
-
-For all loss functions except for the MSE Loss the predictions are flat lines, which is further showcased in the distribution plot. Here the Cross Entropy, the L1 and CRPS Loss all have a non-existing distribution and are centred around there respective values close to zero. Therefore one can observe that this model did not perform well. Even the better prediction of the MSE Loss are nowhere the same quality as the linear forecasts, they seem to be the average over time of the ground truth. \par 
 
 \begin{figure}
     \centering
@@ -976,23 +1073,21 @@ For all loss functions except for the MSE Loss the predictions are flat lines, w
     \label{fig:vanillatransformer_f1_emb64}
 \end{figure}
 
-\begin{itemize}
-    \item graph for validation loss -> comparison of convergence
-    \item graph \& table with best approaches from each model
-    \item results for probabilistic models
-\end{itemize}
-
 \section{Discussion}
 
-So far neither the model nor the alternate loss function have risen to their expectations and it seems that the model is too flat in its architecture and number of layers to capture context in the provided data. Going back to the paper of \cite{transformers-effectiveness}, are transfomers really needed in time series forecasting, this thesis supports their claim that linear models also perform well compared to the much more sophisticated models like transformers. Especially if one looks at the stark difference in resource requirements between these two model families.
+After evaluating the results from all the models it is clear that no model is outperforming the other models, but no model is consistently worse off than the linear model as this possibility was described in the beginning and also in the paper by \cite{transformers-effectiveness} which claimed that a single layer perceptron model acting as a linear model would outperform the deep learning models. This has not been the case in these experiments, though the deep learning models have not performed as well as the papers introducing for example the Informer have claimed.
 
-\subsection{Deterministic and Probabilistic Forecasts}
+Therefor the question remains is the advantage in accuracy of the deep learning models worth the increase resource cost compared to the slightly worse linear model? The table \ref{tab:overall_comparison} shows how drastically the GPU usage can increase with longer forecasts and more complex models especially compared to the linear model. Especially when regarding the table \ref{tab:total_training_cost} it becomes clear how much faster and thus cheaper the training of a linear model is compared to the deep learning models, especially the Vanilla Transformer and the Informer, yet these models did not always outperform the linear model clearly.
+
+Coming back to the research questions proposed in the beginning, there is no clear answer to these questions. Yes the deep learning models outperform the linear model, but cost more doing so and this only has a positive return if the models are used extensively and are scaled up largely. Though there is no clear winner in terms of accuracy and resource efficiency for the deep learning models, while the eFormer is able to surpass the other two models in two scenarios it also ranks worse than the linear model in the other models, though it is still remarkable how well this model performed with its shallow architecture compared to the Informer with its deep neural network and many more layers as well as a decoder part. Hence the development of the eFormer model is partial succes as it holds its weight against the other established models but does not surpass them consistently enough to be considered a replacement.
 
 \subsection{Limitations}
 
 The key limitations experiences in this paper are the homogeneous data from two wind farms in the same country. Therefore the training could lead to over fitting in the model and its application could be problematic in different countries with different weather influences. Further improvement of the models could be achieved by utilising hyperparameter optimization to find the best hyperparameters, but this was not performed to due time and scope constraints. 
 
 The criteria that defines a good model are not from a recognised framework. While the method to compare different error metrics is common practice as \cite{TS-ranking} showed in their time series model ranking, the method of measuring resource usage is not and its criteria are based on the availability of meta data and less a sophisticated framework. It is thus hard to draw definite conclusions how these models perform resource wise in the real world, as the training observations can be vastly altered in other settings. This approach of chosen in this paper is only valid for relative comparison in these experiments, since the models have been trained under the same circumstances. Also the development time and try and error of running the code is not accounted in here, which depending on the models can absorb a significant amount of resources too. 
+
+
 
 \subsection{Future Research}
 
