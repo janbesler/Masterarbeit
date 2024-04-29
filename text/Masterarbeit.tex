@@ -151,7 +151,7 @@ This value has been excluded from further analysis as it likely represents a tec
     \begin{tabular}{l|c|r|r|r|S|r}
     \toprule
     \textbf{Location} & \textbf{Turbine} & \textbf{Total Values} & \textbf{Missing} & \textbf{Outliers} & \textbf{Highest} & \textbf{Stationarity} \\
-     & & \textbf{Total Values} & \textbf{Values} & \textbf{Outliers} & \textbf{Z-Score} & \\
+     & & & \textbf{Values} & & \textbf{Z-Score} & \\
     \midrule
 \textbf{Kelmarsh} & 1 & 288 864 & 3449 & 6 & 3.835573 & yes \\
          & 2 & 288 864 & 3041 & 5 & 3.636474 & yes \\
@@ -192,27 +192,26 @@ This visualization reveals that the majority of missing data occurs at the begin
 \begin{equation}
     |\text{outlier}| \geq 3 \times \left( \frac{x - \mu}{\sigma} \right)
 \end{equation}
-The threshold of three, rather than the more conventional two, accounts for extreme wind speeds particularly prevalent in coastal areas. To illustrate the potential outliers, all data points for the Kelmarsh wind park have been visualized using a kernel density estimation. The left part of figure \ref{fig:Kelmarsh-distribution} shows that the majority of values cluster around zero, indicating no electricity output, which could suggest inactive turbines due to operational decisions unrelated to wind conditions, such as economic considerations or grid capacity. To validate this, a detailed analysis of turbine 6 was conducted to determine the frequency with which it was turned away from the wind, defined as:
+The threshold of three, rather than the more conventional two, accounts for extreme wind speeds particularly prevalent in coastal areas. To illustrate the potential outliers, all data points for the Kelmarsh wind park have been visualized using a kernel density estimation. The figure \ref{fig:Kelmarsh-total-distribution} shows that the majority of values cluster around zero, indicating no electricity output, which could suggest inactive turbines due to operational decisions unrelated to wind conditions, such as economic considerations or grid capacity. To validate this, a detailed analysis of turbine 6 was conducted to determine the frequency with which it was turned away from the wind, defined as:
 \begin{equation}
     \text{out of wind} = \text{Wind speed (m/s)} > 3 \land \text{Power (kW)} < 1 
 \end{equation}
-resulting in 8,705 instances, or 3.16\% of all data points being flagged. Consequently, these data points are removed as their inclusion is influenced more by market or grid demands rather than meteorological conditions. The extent can also be seen in the visualization of the $6^th$ turbine in the right figure \ref{fig:Kelmarsh-distribution}
+resulting in 8,705 instances, or 3.16\% of all data points being flagged. Consequently, these data points are removed as their inclusion is influenced more by market or grid demands rather than meteorological conditions. The extent can also be seen in the visualization of the $6^th$ turbine in the right figure \ref{fig:Kelmarsh-6-distribution}
 
 \begin{figure}[h!]
     \centering
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{graphs/data/Kelmarsh_output_distribution.png}
-        \caption{total}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{graphs/data/Corr_Wind_Power.png}
-        \caption{\#6}
-    \end{subfigure}
-    \caption{Kelmarsh power distribution}
-    \label{fig:Kelmarsh-distribution}
+    \caption{Kelmarsh total power distribution}
+    \includegraphics[width=\linewidth]{graphs/data/Kelmarsh_output_distribution.png}
+    \label{fig:Kelmarsh-total-distribution}
 \end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \caption{Kelmarsh Turbine #6 power distribution}
+    \includegraphics[width=\linewidth]{graphs/data/Corr_Wind_Power.png}
+    \label{fig:Kelmarsh-6-distribution}
+\end{figure}
+
 
 \section{Methodology}
 
@@ -627,6 +626,167 @@ An interesting observation is the increase in RAM usage with longer forecasting 
 
 Overall, the MSE Loss function appears to require less or at most equal GPU resources compared to the L1 Loss function across all models and hyperparameters, while CPU and RAM usages remain comparable. This suggests that MSE Loss is generally less GPU-intensive, offering a potentially more resource-efficient option for model training.
 
+
+\subsection{Epoch Duration \& Loss}
+
+The analysis of epoch duration, including both training time and corresponding loss for each epoch, offers insights into the resource efficiency of the training process. Optimally, shorter epochs and fewer total epochs indicate higher resource efficiency. The convergence rate towards the minimal loss value is a critical factor, heavily influenced by the \textit{learning\_rate}, set at $6^{-4}$.
+
+Different embedding lengths are evaluated to determine their impact on the model's performance, with a particular focus on recurrent forecasting as mentioned before. Results from the eFormer and Informer models, as shown in tables \ref{tab:eformer_training_f6} and \ref{tab:informer_training_f6}, suggest that an embedding length of $32$ yields the most accurate outcomes with the lowest error rates. Data from table \ref{tab:vanillatransformer_training_f6} indicates that for the Vanilla Transformer, an embedding length of $64$ is optimal. These findings highlight the need to tailor the embedding length to the specific model.
+
+The absence of embeddings in the Linear Model conserves computational resources and time in deciding the optimal parameters for the forecasting task. For 1-step ahead forecasting, the MSE Loss emerges as the fastest and most resource-efficient, whereas for longer forecasts, the L1 Loss is the better choice by requiring fewer epochs and having the shortest average epoch durations. With a patience setting of 7 for early stopping, the L1 Loss achieves a local minimum in the training for forecast horizons of 72 and 144 after only three epochs, enabling rapid retraining cycles.
+
+Interestingly, the number of epochs required is generally lower for the L1 Loss compared to the CRPS and MSE losses, with the exception of the 1-step forecast scenario. Given that the total training time and resource consumption are lower with the L1 Loss, it is identified as the more resource-efficient loss function for future applications. However, while training times increase with longer forecast horizons, the average epoch durations for 1-step and 6-step forecasts are comparable, with significant increases only observed for the 72-step and 144-step forecasts. This escalation can be attributed to the expanded sequence length in training, which enlarges the weight matrices.
+
+Contrary to expectations, the Test Loss remains consistent across different forecast horizons, challenging the initial hypothesis that error would escalate with longer forecasts due to cumulative variances in the recurrent forecasting approach. This observation suggests that the forecast horizon, as investigated in these experiments, does not significantly impact model accuracy, indicating uniform performance across different lengths. Although the average epoch duration increases with longer forecasts, the number of epochs remains consistent across all scenarios. This can be attributed to the increased sequence length during the training process as the weight matrices become larger. Notably, the average epoch duration for the Linear Model is less than half that of the other deep learning models, highlighting its efficiency. Despite these findings, there is no definitive preference for a specific loss function for the Linear Model, suggesting that the choice may depend on specific use case requirements or further experimental insights.
+
+
+
+The eFormer model demonstrates consistent efficiency across all forecast horizons, maintaining a relatively stable number of epochs and test loss similar to those observed with the Vanilla Transformer. However, unlike the Vanilla Transformer, the eFormer does not exhibit significant increases in average epoch durations with extended forecast horizons. When comparing the two loss functions, no distinct advantage emerges in terms of total training time. However, hardware utilization metrics reveal that the MSE loss is more favorable due to lower GPU usage for shorter forecasts, while for longer forecasts, the choice between MSE and L1 Loss shows negligible difference.
+
+In the case of the Vanilla Transformer, it consistently performs faster under the L1 Loss across various forecasting horizons, except for the 1-step forecast where the difference is minimal, amounting to only two additional epochs and approximately six minutes longer in the training and validation phases. Unlike the linear model, the average epoch duration for the Vanilla Transformer is not uniform across shorter and longer forecasts and escalates significantly as the forecast horizon extends. This increase is partly due to larger data matrices and more complex internal calculations compared to the simpler architecture of the linear model. Despite this, the average epoch duration remains longer than that of the eFormer, yet the Test Loss remains consistent across models, reinforcing the recommendation of using L1 Loss with an embedding length of 64 for the Vanilla Transformer across different forecast lengths.
+
+For the Informer model across two forecast horizons, the MSE loss function shows a lower average epoch duration than the other deep learning models, yet it is still over double the duration. Although the number of epochs required by the Informer is comparatively lower, the extended average training duration results in overall longer training times than anticipated.
+
+In determining the optimal model for each forecast horizon, critical variables such as average epoch duration, average GPU and RAM usage, and Test Loss were considered. Given the two loss functions available, the L1 Loss was selected for all scenarios based on its superior performance in the Linear Model and Vanilla Transformer, and its comparable results in the eFormer. The Informer model, which showed some preference for the MSE loss, is thus placed at a slight disadvantage. As noted, the last two cases for the Informer are omitted in Table \ref{tab:overall_comparison} due to excessively long run times.
+
+The results confirm that the Linear Model is the quickest to train across all forecast horizons, up to six times faster than the deep learning models. RAM usage is comparable across models, except for the Informer and Vanilla Transformer, which consume more RAM in short-term forecasts. In long-term forecasts, RAM usage scales similarly for all models, indicative of a direct correlation with the size of the dataset after the lags. The eFormer exhibits the highest GPU usage for short-term forecasts but maintains consistent usage even for longer horizons, offering an advantage over the Vanilla Transformer. Conversely, the Linear Model consistently shows significantly lower GPU usage.
+
+Test loss evaluations reveal that no model consistently outperforms the others across all forecast lengths. For the 1-step forecast, the eFormer achieves the lowest Test Loss, suggesting higher accuracy, while for the 6-step forecast, the Informer excels. The Vanilla Transformer attains the lowest loss at the 72-step forecast, with the eFormer performing least favorably as it already did with the 6-step forecast. In the 144-step forecast, the eFormer slightly outperforms the Linear and Vanilla Transformer models, which display nearly identical scores.
+
+Despite never achieving the lowest loss, the Linear Model stands out for its speed and minimal resource consumption, making it the most efficient model overall. While the deep learning models offer higher accuracy, this comes at the cost of increased GPU usage and longer epoch duration. The eFormer, Informer, and Vanilla Transformer each excel in different scenarios, highlighting the absence of a universally superior model among them.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Overall Comparison for each forecast horizon}
+    \begin{tabular}{l|l|S|S|S|S}
+        \toprule
+        \textbf{Forecast} & \textbf{Model} & \textbf{Avg Epoch} & \textbf{Avg RAM (GB)} & \textbf{Avg GPU (GB)} & \textbf{Test Loss} \\
+        \textbf{Horizon} & & \textbf{Duration (s)} & & & \\
+        \midrule
+        1 & Linear & 111.4196 & 8.1863 & 0.416 & 706.8088 \\
+         & eFormer & 258.9076 & 8.3481 & 3.3789 & 694.003 \\
+         & Transformer & 224.3803 & 7.6841 & 1.2159 & 705.5882 \\
+         & Informer & 606.4455 & 13.9143 & 1.1034 & 706.7341 \\
+        \midrule
+        6 & Linear & 107.8403 & 8.2895 & 0.416 & 707.828 \\
+         & eFormer & 251.8938 & 8.3514 & 3.3789 & 711.0292 \\
+         & Transformer & 231.4385 & 13.8335 & 1.7559 & 703.7991 \\
+         & Informer & 546.6756 & 8.3968 & 1.4902 & 695.1579 \\
+        \midrule
+        72 & Linear & 147.6955 & 24.9946 & 0.416 & 705.6111 \\
+         & eFormer & 420.5778 & 25.9123 & 3.3789 & 712.7202 \\
+         & Transformer & 500.1715 & 25.5236 & 9.6910 & 688.5618 \\
+         & Informer &  &  &  &  \\
+        \midrule
+        144 & Linear & 213.8218 & 44.9186 & 0.416 & 705.3632 \\
+         & eFormer & 754.8694 & 46.6185 & 3.3789 & 702.4061 \\
+         & Transformer & 882.9508 & 46.4351 & 28.5396 & 705.1763 \\
+         & Informer &  &  &  &  \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:overall_comparison}
+\end{table}
+
+For the entire training duration of all models with which estimate the financial cost can be estimated is only a rough estimate, as the time of the failed runs have not been captured but which could be attributed at $30 \%$ on top of the total training time. Each model has been trained on average twice, thus resulting in the following training times and associated costs if all models were trained on an AWS V100 server, which costs $3.06 \$/h$\footnote{Link to prices used: \href{https://www.servethehome.com/amazon-aws-ec2-p3-instances-with-nvidia-tesla-v100/}{AWS Prices}}. The high duration for the Informer is influenced by the retries of the 72-step forecasts which took over 36 hours each and thus the entire duration for this model is going up sharply.
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{Total Training and associated cost}
+    \begin{tabular}{l|S|S}
+        \toprule
+        \textbf{Model} & \textbf{Training} & \textbf{Total} \\
+         & \textbf{Time (h)} & \textbf{Cost in \$} \\
+        \midrule
+        linear & 17.593 & 53.8356 \\
+        eFormer & 61.576 & 188.42256 \\
+        Transformer & 70.373 & 215.34138 \\
+        Informer & 232.57 & 711.6642 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:total_training_cost}
+\end{table}
+
+\subsection{Predictions vs Labels}
+
+To showcase the effectiveness of the models in predicting values, the predictions alongside the labels from the test phase have been saved for visual comparison. Additionally, the predictions are visualized as distributions to evaluate the accuracy of the models in replicating the original value distributions and to identify possible alternative patterns the models may have learned.
+
+The plot \ref{fig:Linear_f1} illustrates that the CRPS loss function results in suboptimal forecasts, with predicted values consistently near zero throughout the observed time horizon. This observation is supported by density plots, where the distribution of predictions under CRPS is centered around zero, lacking the variability seen in the actual data. In contrast, both MSE and L1 Loss demonstrate robust performance, producing forecasts that closely match the ground truth distribution. This suggests that MSE and L1 Loss are preferable for the Linear model with a 1-step forecast horizon, raising concerns about the suitability of CRPS for this particular scenario.
+
+For the eFormer model, depicted in figure \ref{fig:eFormer_f144_emb32}, density estimations indicate a tendency to overpredict and underpredict depending on the respective loss function at the tails of the output range. The line plot reveals accurate timing of production increases but a consistent failure to capture peak values. This pattern underscores the strengths and limitations of the model's predictive capabilities. The MSE and L1 Loss functions again show similar performance levels, confirming their reliability across different model architectures.
+
+Comparative analysis of the Vanilla Transformer and the Informer models reveals consistent trends across varying forecast horizons. While these models effectively capture median values and transitional phases in the data, their performance deteriorates at predicting the tails. The precision of forecasts generally improves with shorter forecast horizons, aligning with the expectations about model sensitivity to input data range and duration.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/Linear_pred6_analysis.png}
+    \caption{Linear Model - 1 step forecast}
+    \label{fig:Linear_f1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/Informer_pred6_analysis.png}
+    \caption{Informer - 6 step forecast}
+    \label{fig:vanillatransformer_f6_emb32}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/VanillaTransformer_pred72_analysis.png}
+    \caption{Vanilla Transformer - 72 step forecast}
+    \label{fig:vanillatransformer_f72_emb64}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{graphs/results/eFormer_pred144_analysis.png}
+    \caption{eFormer - 144-step forecast}
+    \label{fig:eFormer_f144_emb32}
+\end{figure}
+
+\section{Discussion}
+
+Upon evaluating the outcomes from all models, it is evident that while no single model consistently outperforms the others, the Linear model has not been universally outclassed as was initially hypothesized in literature such as by \cite{transformers-effectiveness}, which suggested that simple linear models could surpass more complex deep learning architectures. Contrary to expectations set by papers introducing advanced models like the Informer, the deep learning models did not demonstrate the anticipated superiority in performance.
+
+This leads to a question regarding the viability of deep learning models in practical applications: Is the marginal accuracy improvement of deep learning models justifiable against their significantly higher resource consumption compared to the Linear model? As illustrated in Table \ref{tab:overall_comparison}, the increase in GPU usage is substantial for longer forecasts and more complex models. Furthermore, Table \ref{tab:total_training_cost} clearly highlights the speed and cost-efficiency of training the Linear model compared to its deep learning counterparts, particularly the Vanilla Transformer and the Informer, which did not consistently deliver superior performance.
+
+Reflecting on the research questions in the beginning, the answer remains nuanced. While deep learning models do outperform the Linear model in certain aspects, the additional costs incurred may only be justified if the models are employed extensively and scaled significantly. Among the deep learning options, the eFormer shows potential by outperforming other models in certain scenarios, yet it does not consistently surpass the Linear model across all tests. Its performance, particularly with a shallower architecture compared to the Informer's more layered and complex network, is noteworthy though. The development of the eFormer can be seen as a partial success, it competes admirably with established models but does not consistently outshine them to be considered as an improvement.
+
+
+\subsection{Limitations}
+
+The primary limitations encountered in this study stem from the homogeneity of the data, which originates exclusively from two wind farms within the same geographic region. This raises concerns regarding the potential for model overfitting, as the training data does not adequately represent varied meteorological conditions found in other regions. Such limitations highlight the risk of reduced model generalizability when applied to regions with distinct weather patterns.
+
+Although hyperparameter optimization could potentially enhance model performance, it was not conducted within the scope of this study due to time constraints and the project's defined boundaries. The absence of this optimization phase might limit the effectiveness of the models under different operational settings.
+
+Furthermore, the criteria used to evaluate model performance do not stem from a widely recognized framework. While comparing various error metrics is a standard practice, as demonstrated by \cite{TS-ranking} in their analysis of time series models, the methodology employed to assess resource usage lacks a clear, standardized framework. Consequently, the conclusions drawn regarding resource efficiency may not be universally applicable. The resource usage measurements in this study, based on available metadata, are primarily suitable for relative comparisons within the controlled environment of these experiments.
+
+Moreover, the development time and the trial-and-error process involved in model implementation, which can consume significant resources, were not considered in detail in this analysis. This oversight might skew the efficiency of the models, as the operational and developmental costs are substantial factors in practical applications.
+
+
+\subsection{Future Research}
+
+For future research the eFormer can be expanded to include variation for incorperating variance to turn this deterministic model into a probabilistic one. Also the model can be trained with additional data from other regions in the world with different weather conditions to increase the generalizability. Further one could also use this model to train it on different aspects of electricity forecast and go in the direction of consumption rather than production and compare it there against the same models to see if it performs as well there too.
+
+
+\section{Conclusion}
+
+The Informer model by \cite{Informer} is regarded as a good model for time series forecasting as shown by \cite{TS-ranking}. Therefor a version based on the principles of this model with the aim to be more resource efficient could in theory also perform as good as its original. As the tables \ref{tab:overall_comparison} and \ref{tab:total_training_cost} showed the model performs similar to the original while consuming less resources compared to the Informer model. Though the linear model also performed well with even less resources consumed making it as expected the most efficient model of those tested. But the use of the CRPS loss function did not present results comparable to the expectations, this could be due to a lackluster implementation. The overall hypothesis by \cite{transformers-effectiveness} can be partly seen as disproved, since the linear model did not outperform the deep learning models, but the difference is not so large to discard the use of a linear model completely.
+
+\newpage
+
+\printbibliography
+
+\newpage
+
+\appendix
+
+\section{Tables}
+
+\subsection{Hardware usage}
+
 \begin{table}
     \footnotesize
     \centering
@@ -796,10 +956,6 @@ Overall, the MSE Loss function appears to require less or at most equal GPU reso
 
 \subsection{Epoch Duration \& Loss}
 
-The analysis of epoch duration, including both training time and corresponding loss for each epoch, offers insights into the resource efficiency of the training process. Optimally, shorter epochs and fewer total epochs indicate higher resource efficiency. The convergence rate towards the minimal loss value is a critical factor, heavily influenced by the \textit{learning\_rate}, set at $6^{-4}$.
-
-Different embedding lengths are evaluated to determine their impact on the model's performance, with a particular focus on recurrent forecasting as mentioned before. Results from the eFormer and Informer models, as shown in tables \ref{tab:eformer_training_f6} and \ref{tab:informer_training_f6}, suggest that an embedding length of $32$ yields the most accurate outcomes with the lowest error rates. Data from table \ref{tab:vanillatransformer_training_f6} indicates that for the Vanilla Transformer, an embedding length of $64$ is optimal. These findings highlight the need to tailor the embedding length to the specific model.
-
 \begin{table}
     \footnotesize
     \centering
@@ -899,12 +1055,6 @@ Different embedding lengths are evaluated to determine their impact on the model
     \label{tab:linear_epoch}
 \end{table}
 
-The absence of embeddings in the Linear Model conserves computational resources and time in deciding the optimal parameters for the forecasting task. For 1-step ahead forecasting, the MSE Loss emerges as the fastest and most resource-efficient, whereas for longer forecasts, the L1 Loss is the better choice by requiring fewer epochs and having the shortest average epoch durations. With a patience setting of 7 for early stopping, the L1 Loss achieves a local minimum in the training for forecast horizons of 72 and 144 after only three epochs, enabling rapid retraining cycles.
-
-Interestingly, the number of epochs required is generally lower for the L1 Loss compared to the CRPS and MSE losses, with the exception of the 1-step forecast scenario. Given that the total training time and resource consumption are lower with the L1 Loss, it is identified as the more resource-efficient loss function for future applications. However, while training times increase with longer forecast horizons, the average epoch durations for 1-step and 6-step forecasts are comparable, with significant increases only observed for the 72-step and 144-step forecasts. This escalation can be attributed to the expanded sequence length in training, which enlarges the weight matrices.
-
-Contrary to expectations, the Test Loss remains consistent across different forecast horizons, challenging the initial hypothesis that error would escalate with longer forecasts due to cumulative variances in the recurrent forecasting approach. This observation suggests that the forecast horizon, as investigated in these experiments, does not significantly impact model accuracy, indicating uniform performance across different lengths. Although the average epoch duration increases with longer forecasts, the number of epochs remains consistent across all scenarios. This can be attributed to the increased sequence length during the training process as the weight matrices become larger. Notably, the average epoch duration for the Linear Model is less than half that of the other deep learning models, highlighting its efficiency. Despite these findings, there is no definitive preference for a specific loss function for the Linear Model, suggesting that the choice may depend on specific use case requirements or further experimental insights.
-
 \begin{table}
     \footnotesize
     \centering
@@ -929,12 +1079,6 @@ Contrary to expectations, the Test Loss remains consistent across different fore
     \end{tabular}
     \label{tab:eformer_epoch_emb32}
 \end{table}
-
-The eFormer model demonstrates consistent efficiency across all forecast horizons, maintaining a relatively stable number of epochs and test loss similar to those observed with the Vanilla Transformer. However, unlike the Vanilla Transformer, the eFormer does not exhibit significant increases in average epoch durations with extended forecast horizons. When comparing the two loss functions, no distinct advantage emerges in terms of total training time. However, hardware utilization metrics reveal that the MSE loss is more favorable due to lower GPU usage for shorter forecasts, while for longer forecasts, the choice between MSE and L1 Loss shows negligible difference.
-
-In the case of the Vanilla Transformer, it consistently performs faster under the L1 Loss across various forecasting horizons, except for the 1-step forecast where the difference is minimal, amounting to only two additional epochs and approximately six minutes longer in the training and validation phases. Unlike the linear model, the average epoch duration for the Vanilla Transformer is not uniform across shorter and longer forecasts and escalates significantly as the forecast horizon extends. This increase is partly due to larger data matrices and more complex internal calculations compared to the simpler architecture of the linear model. Despite this, the average epoch duration remains longer than that of the eFormer, yet the Test Loss remains consistent across models, reinforcing the recommendation of using L1 Loss with an embedding length of 64 for the Vanilla Transformer across different forecast lengths.
-
-For the Informer model across two forecast horizons, the MSE loss function shows a lower average epoch duration than the other deep learning models, yet it is still over double the duration. Although the number of epochs required by the Informer is comparatively lower, the extended average training duration results in overall longer training times than anticipated.
 
 \begin{table}
     \footnotesize
@@ -979,131 +1123,5 @@ For the Informer model across two forecast horizons, the MSE loss function shows
     \end{tabular}
     \label{tab:informer_epoch_emb32}
 \end{table}
-
-In determining the optimal model for each forecast horizon, critical variables such as average epoch duration, average GPU and RAM usage, and Test Loss were considered. Given the two loss functions available, the L1 Loss was selected for all scenarios based on its superior performance in the Linear Model and Vanilla Transformer, and its comparable results in the eFormer. The Informer model, which showed some preference for the MSE loss, is thus placed at a slight disadvantage. As noted, the last two cases for the Informer are omitted in Table \ref{tab:overall_comparison} due to excessively long run times.
-
-The results confirm that the Linear Model is the quickest to train across all forecast horizons, up to six times faster than the deep learning models. RAM usage is comparable across models, except for the Informer and Vanilla Transformer, which consume more RAM in short-term forecasts. In long-term forecasts, RAM usage scales similarly for all models, indicative of a direct correlation with the size of the dataset after the lags. The eFormer exhibits the highest GPU usage for short-term forecasts but maintains consistent usage even for longer horizons, offering an advantage over the Vanilla Transformer. Conversely, the Linear Model consistently shows significantly lower GPU usage.
-
-Test loss evaluations reveal that no model consistently outperforms the others across all forecast lengths. For the 1-step forecast, the eFormer achieves the lowest Test Loss, suggesting higher accuracy, while for the 6-step forecast, the Informer excels. The Vanilla Transformer attains the lowest loss at the 72-step forecast, with the eFormer performing least favorably as it already did with the 6-step forecast. In the 144-step forecast, the eFormer slightly outperforms the Linear and Vanilla Transformer models, which display nearly identical scores.
-
-Despite never achieving the lowest loss, the Linear Model stands out for its speed and minimal resource consumption, making it the most efficient model overall. While the deep learning models offer higher accuracy, this comes at the cost of increased GPU usage and longer epoch duration. The eFormer, Informer, and Vanilla Transformer each excel in different scenarios, highlighting the absence of a universally superior model among them.
-
-
-\begin{table}
-    \footnotesize
-    \centering
-    \caption{Overall Comparison for each forecast horizon}
-    \begin{tabular}{l|l|S|S|S|S}
-        \toprule
-        \textbf{Forecast} & \textbf{Model} & \textbf{Avg Epoch} & \textbf{Avg RAM (GB)} & \textbf{Avg GPU (GB)} & \textbf{Test Loss} \\
-        \textbf{Horizon} & & \textbf{Duration (s)} & & & \\
-        \midrule
-        1 & Linear & 111.4196 & 8.1863 & 0.416 & 706.8088 \\
-         & eFormer & 258.9076 & 8.3481 & 3.3789 & 694.003 \\
-         & Transformer & 224.3803 & 7.6841 & 1.2159 & 705.5882 \\
-         & Informer & 606.4455 & 13.9143 & 1.1034 & 706.7341 \\
-        \midrule
-        6 & Linear & 107.8403 & 8.2895 & 0.416 & 707.828 \\
-         & eFormer & 251.8938 & 8.3514 & 3.3789 & 711.0292 \\
-         & Transformer & 231.4385 & 13.8335 & 1.7559 & 703.7991 \\
-         & Informer & 546.6756 & 8.3968 & 1.4902 & 695.1579 \\
-        \midrule
-        72 & Linear & 147.6955 & 24.9946 & 0.416 & 705.6111 \\
-         & eFormer & 420.5778 & 25.9123 & 3.3789 & 712.7202 \\
-         & Transformer & 500.1715 & 25.5236 & 9.6910 & 688.5618 \\
-         & Informer &  &  &  &  \\
-        \midrule
-        144 & Linear & 213.8218 & 44.9186 & 0.416 & 705.3632 \\
-         & eFormer & 754.8694 & 46.6185 & 3.3789 & 702.4061 \\
-         & Transformer & 882.9508 & 46.4351 & 28.5396 & 705.1763 \\
-         & Informer &  &  &  &  \\
-    \bottomrule
-    \end{tabular}
-    \label{tab:overall_comparison}
-\end{table}
-
-For the entire training duration of all models with which estimate the financial cost can be estimated is only a rough estimate, as the time of the failed runs have not been captured but which could be attributed at $30 \%$ on top of the total training time. Each model has been trained on average twice, thus resulting in the following training times and associated costs if all models were trained on an AWS V100 server, which costs $3.06 \$/h$. The high duration for the Informer is influenced by the retries of the 72-step forecasts which took over 36 hours each and thus the entire duration for this model is going up sharply.
-
-\begin{table}
-    \footnotesize
-    \centering
-    \caption{Total Training and associated cost}
-    \begin{tabular}{l|S|S}
-        \toprule
-        \textbf{Model} & \textbf{Training} & \textbf{Total} \\
-         & \textbf{Time (h)} & \textbf{Cost in \$} \\
-        \midrule
-        linear & 17.593 & 53.8356 \\
-        eFormer & 61.576 & 188.42256 \\
-        Transformer & 70.373 & 215.34138 \\
-        Informer & 232.57 & 711.6642 \\
-    \bottomrule
-    \end{tabular}
-    \label{tab:total_training_cost}
-\end{table}
-
-\subsection{Predictions vs Labels}
-
-To showcase the effectiveness of the models in predicting values, the predictions alongside the labels from the test phase have been saved for visual comparison. Additionally, the predictions are visualized as distributions to evaluate the accuracy of the models in replicating the original value distributions and to identify possible alternative patterns the models may have learned.
-
-The plot \ref{fig:Linear_f1} illustrates that the CRPS loss function results in suboptimal forecasts, with predicted values consistently near zero throughout the observed time horizon. This observation is supported by density plots, where the distribution of predictions under CRPS is centered around zero, lacking the variability seen in the actual data. In contrast, both MSE and L1 Loss demonstrate robust performance, producing forecasts that closely match the ground truth distribution. This suggests that MSE and L1 Loss are preferable for the Linear model with a 1-step forecast horizon, raising concerns about the suitability of CRPS for this particular scenario.
-
-For the eFormer model, depicted in figure \ref{fig:eFormer_f144_emb32}, density estimations indicate a tendency to overpredict and underpredict depending on the respective loss function at the tails of the output range. The line plot reveals accurate timing of production increases but a consistent failure to capture peak values. This pattern underscores the strengths and limitations of the model's predictive capabilities. The MSE and L1 Loss functions again show similar performance levels, confirming their reliability across different model architectures.
-
-Comparative analysis of the Vanilla Transformer and the Informer models reveals consistent trends across varying forecast horizons. While these models effectively capture median values and transitional phases in the data, their performance deteriorates at predicting the tails. The precision of forecasts generally improves with shorter forecast horizons, aligning with the expectations about model sensitivity to input data range and duration.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{graphs/results/Linear_model_analysis.png}
-    \caption{Linear Model - 1 step forecast}
-    \label{fig:Linear_f1}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{graphs/results/eFormer_model_analysis.png}
-    \caption{eFormer - 144-step forecast}
-    \label{fig:eFormer_f144_emb32}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{graphs/results/VanillaTransformer_model_analysis.png}
-    \caption{Vanilla Transformer - 1 step forecast}
-    \label{fig:vanillatransformer_f1_emb64}
-\end{figure}
-
-\section{Discussion}
-
-After evaluating the results from all the models it is clear that no model is outperforming the other models, but no model is consistently worse off than the linear model as this possibility was described in the beginning and also in the paper by \cite{transformers-effectiveness} which claimed that a single layer perceptron model acting as a linear model would outperform the deep learning models. This has not been the case in these experiments, though the deep learning models have not performed as well as the papers introducing for example the Informer have claimed.
-
-Therefor the question remains is the advantage in accuracy of the deep learning models worth the increase resource cost compared to the slightly worse linear model? The table \ref{tab:overall_comparison} shows how drastically the GPU usage can increase with longer forecasts and more complex models especially compared to the linear model. Especially when regarding the table \ref{tab:total_training_cost} it becomes clear how much faster and thus cheaper the training of a linear model is compared to the deep learning models, especially the Vanilla Transformer and the Informer, yet these models did not always outperform the linear model clearly.
-
-Coming back to the research questions proposed in the beginning, there is no clear answer to these questions. Yes the deep learning models outperform the linear model, but cost more doing so and this only has a positive return if the models are used extensively and are scaled up largely. Though there is no clear winner in terms of accuracy and resource efficiency for the deep learning models, while the eFormer is able to surpass the other two models in two scenarios it also ranks worse than the linear model in the other models, though it is still remarkable how well this model performed with its shallow architecture compared to the Informer with its deep neural network and many more layers as well as a decoder part. Hence the development of the eFormer model is partial succes as it holds its weight against the other established models but does not surpass them consistently enough to be considered a replacement.
-
-\subsection{Limitations}
-
-The key limitations experiences in this paper are the homogeneous data from two wind farms in the same country. Therefore the training could lead to over fitting in the model and its application could be problematic in different countries with different weather influences. Further improvement of the models could be achieved by utilising hyperparameter optimization to find the best hyperparameters, but this was not performed to due time and scope constraints. 
-
-The criteria that defines a good model are not from a recognised framework. While the method to compare different error metrics is common practice as \cite{TS-ranking} showed in their time series model ranking, the method of measuring resource usage is not and its criteria are based on the availability of meta data and less a sophisticated framework. It is thus hard to draw definite conclusions how these models perform resource wise in the real world, as the training observations can be vastly altered in other settings. This approach of chosen in this paper is only valid for relative comparison in these experiments, since the models have been trained under the same circumstances. Also the development time and try and error of running the code is not accounted in here, which depending on the models can absorb a significant amount of resources too. 
-
-
-
-\subsection{Future Research}
-
-\begin{itemize}
-    \item comparison between deterministic and probabilistic results
-    \item lack of external data like wind forecast for area
-    \item for company data, lack of explanatory variables like when orders and thus production switches
-\end{itemize}
-
-\section{Conclusion}
-
-The Informer model by \cite{Informer} is regarded as a good model for time series forecasting as shown by \cite{TS-ranking}. Therefor a version based on the principles of this model with the aim to be more resource efficient could in theory also perform as good as its original. Though the experiments conducted showed a different picture, with a linear model outperforming the eFormer. The reasons for this outcome can be found in the architecture, as it performed consistently across different loss functions. As discussed the problems lie within the shallow architecture which lacks the depth to learn the context in the provided data. Other models such as the vanilla transformer by \cite{vanilla-transformer} and the original Informer with their deeper layers are more suited for the task of forecasting than the developed eFormer model in this paper. Furthermore the use of the CRPS loss function does not present results comparable to the expectations, this could be due to a lackluster implementation as code and thus the problems experienced with this function arise. 
-
-
-\newpage
-
-\printbibliography
 
 \end{document}
