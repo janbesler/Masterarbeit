@@ -93,7 +93,63 @@
 
 \begin{document}
 
+\begin{titlepage}       
+% 		Wrapper for title page definitions
+
+\thispagestyle{empty}   
+% 		No page numbering on the title page
+
+% 		Title page text that shall be displayed in the center of the page
+\begin{center}
+\vspace*{1cm}
+{\bf  \Large  
+Are transformer models in time series forecasting worth the hustle? \\
+A data driven Approach} \\
+\vspace*{3cm} 
+
+{  \large  Degree Dissertation} \\
+{  \large  for the } \\
+{  \large  Master Examination in} \\
+{\bf  \large  Data Science in Business and Economics} \\
+{  \large  at the} \\
+{  \large  Faculty of Economic and Social Sciences} \\
+{  \large  of the } \\
+{  \large  Eberhard Karls Universität} \\
+{  \large  Tübingen} \\
+
+\vspace*{1.2cm} 
+\end{center}
+
+%		Information about the author of the thesis
+\vfill
+\begin{normalsize}
+\begin{flushright}
+
+\begin{table}[h!]
+%\captionsetup{font=footnotesize}
+   \centering
+    \begin{flushright}    
+%    \footnotesize
+    \begin{tabular}{l l }
+    Examiner: & Dr. Nicole Ludwig \\
+    Submitted by: & Jan Besler \\
+       & Born in Berlin \\
+       & on 07/04/1997 \\
+       & ID: 5629079\\
+    Date of submission: & 30/04/2024 \\
+\end{tabular} 
+\end{flushright}
+\end{table}
+
+\end{flushright}
+\end{normalsize}
+
+\end{titlepage}
+
+\newpage
+
 \tableofcontents
+\thispagestyle{empty}
 
 \newpage
 
@@ -200,15 +256,15 @@ resulting in 8,705 instances, or 3.16\% of all data points being flagged. Conseq
 
 \begin{figure}[h!]
     \centering
-    \caption{Kelmarsh total power distribution}
     \includegraphics[width=\linewidth]{graphs/data/Kelmarsh_output_distribution.png}
+    \caption{Kelmarsh total power distribution}
     \label{fig:Kelmarsh-total-distribution}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \caption{Kelmarsh Turbine #6 power distribution}
-    \includegraphics[width=\linewidth]{graphs/data/Corr_Wind_Power.png}
+    \includegraphics[width=.6\linewidth]{graphs/data/Corr_Wind_Power.png}
+    \caption{Kelmarsh Turbine No. 6 power distribution}
     \label{fig:Kelmarsh-6-distribution}
 \end{figure}
 
@@ -291,7 +347,7 @@ The implementation of this model is sourced from a GitHub repository \footnote{\
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/models/VanillaTransformer.png}
-    \caption{Vanilla Transformer Architecture}
+    \caption{Vanilla Transformer Architecture, picture taken from \cite{vanilla-transformer}}
     \label{fig:VanillaTransformer_architecture}
 \end{figure}
 
@@ -313,8 +369,8 @@ This method differentiates between 'active' and 'lazy' components of the computa
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{graphs/models/Sparse_Attention_Example.png}
-    \caption{Informer: Sparse Attention}
-    \label{fig:enter-label}
+    \caption{Comparison of Vanilla Self-Attention and Sparse Attention, picture taken from \cite{Informer}}
+    \label{fig:sparse_attention}
 \end{figure}
 
 Moreover, the Informer manages memory constraints effectively by implementing a Distilling operation, which condenses the input size between layers by halving it, thus significantly reducing memory requirements for handling longer sequences.
@@ -372,30 +428,14 @@ This method not only preserves the sequential order of the data but also allows 
 
 In this implementation, the sparse attention mechanism serves as a substitute for the traditional vanilla attention mechanism, focusing on excluding segments of the time series deemed not significant for model predictions. This selective attention process is enabled by set thresholds established through the \textit{attention\_dropout} and \textit{prob\_sparse\_factor} hyperparameters, enabling the model to efficiently manage the relevance of data points throughout the sequence.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{graphs/models/Sparse_Attention_Example.png}
-    \caption{Comparison of Vanilla Self-Attention and Sparse Attention, picture taken from \cite{Informer}}
-    \label{fig:sparse_attention}
-\end{figure}
-
 Unlike other transformer architectures, this model does not employ a masking strategy since there is no decoder to shield information from and each time series in a batch only consists of past values without the chance to access different time series'. Instead, an empty vector placeholder represents the future time horizons targeted for prediction. These future timestamps undergo the same positional encoding process as the embeddings, ensuring that the model's 'decoder' segment simply extends the prediction tasks to unseen future timestamps. This is achieved by utilising a recurrent forecasting method as described by \cite{recurrent_forecasting} where only one step is forecasted each iteration until the goal of a $n$-step forecast is reached.
 
 The structure of the transformers using the sparse attention mechanism is depicted in Figure \ref{fig:eFormer_sparse}. This approach not only simplifies the architectural complexity but also optimizes computational efficiency by focusing processing power on data segments with the highest relevance, thereby maintaining or enhancing predictive accuracy while managing resource use effectively.
 
 \begin{figure}
-    \hspace*{\fill}
-    \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{graphs/models/eFormer_probSparse.png}
-        \caption{probabilistic}        
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{graphs/models/eFormer_det_sparse.png}
-        \caption{deterministic}
-    \end{subfigure}
-    \hspace*{\fill}
-    \caption{eFormer Sparse Attention}
+    \centering
+    \includegraphics[width=0.5\linewidth]{graphs/models/eFormer_final.png}
+    \caption{eFormer architecture}
     \label{fig:eFormer_sparse}
 \end{figure}
 
@@ -787,7 +827,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
 
 \subsection{Hardware usage}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Linear Model Hardware Results}
@@ -816,7 +856,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:linear_hardware}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{eFormer Model Hardware Results for Forecast = 6}
@@ -841,7 +881,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:eformer_hardware_f6}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Vanilla Transformer Model Hardware Results for Forecast = 6}
@@ -863,7 +903,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:vanillatransformer_hardware_f6}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Informer Model Hardware Results for Forecast = 6}
@@ -885,7 +925,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:informer_hardware_f6}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{eFormer Model Hardware Results for Embedding Length = 32}
@@ -910,7 +950,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:eformer_hardware_emb32}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Vanilla Transformer Model Hardware Results for Embedding Length = 64}
@@ -935,7 +975,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:vanillatransformer_hardware_emb64}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Informer Model Hardware Results for Embedding Length = 32}
@@ -956,7 +996,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
 
 \subsection{Epoch Duration \& Loss}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{eFormer Model Training Results for Forecast = 6}
@@ -981,7 +1021,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:eformer_training_f6}
     \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \centering
     \footnotesize
     \caption{Vanilla Transformer Model Training Results for Forecast = 6}
@@ -1003,7 +1043,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:vanillatransformer_training_f6}
     \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \centering
     \caption{Informer Model Training Results for Forecast = 6}
     \begin{tabular}{l|l|r|S|S|S}
@@ -1024,9 +1064,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:informer_training_f6}
     \end{table}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Linear Model Epoch Results}
@@ -1055,7 +1093,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:linear_epoch}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{eFormer Model Epoch Results for Embedding Length = 32}
@@ -1080,7 +1118,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:eformer_epoch_emb32}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Vanilla Transformer Model Epoch Results for Embedding Length = 64}
@@ -1105,7 +1143,7 @@ The Informer model by \cite{Informer} is regarded as a good model for time serie
     \label{tab:vanillatransformer_epoch_emb64}
 \end{table}
 
-\begin{table}
+\begin{table}[!htbp]
     \footnotesize
     \centering
     \caption{Informer Model Epoch Results for Embedding Length = 32}
